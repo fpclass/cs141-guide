@@ -1,0 +1,47 @@
+\section{Input \& Output}
+\topics{The \haskellIn{IO} monad.}
+
+These exercises are about the \haskellIn{IO} monad. As usual, you can obtain the skeleton code for the exercises by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-io
+\end{minted}
+As we know, Haskell is a purely functional programming language -- that is, functions are pure and therefore free of side effects. Input and output (I/O), such as reading from or writing to files, is a side effect. However, I/O is extremely useful and important for writing programs in practice. We have already seen that effects can be encoded in Haskell using monads, allowing us to abstract over behaviours that we want to happen implicitly in our program. Haskell uses the same approach to let us perform I/O by providing the \haskellIn{IO} monad. Now, ``hiding'' side effects in a monad does not magically make programs that use it pure, but Haskell's type system prevents us from using \haskellIn{IO} inside of pure functions, thus keeping them pure. This effectively means our Haskell programs end up having two layers: an outer layer which is impure and can perform I/O and an inner layer which is pure and cannot perform I/O. The I/O layer can call pure functions though.
+
+\faBook~\emph{Recommended reading}: Chapter 9 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 10 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\faBook~\emph{Further reading}: the \haskellIn{IO} monad was first described in \emph{Tackling the awkward squad: monadic input/output, concurrency, exceptions, and foreign-language calls in Haskell} \citep{jones2000tackling}.
+
+\taskLine
+
+\task{You can find an overview of types and functions related to the \haskellIn{IO} monad that are part of the standard library in the documentation for the \texttt{\small System.IO} module\footnote{\url{https://hackage.haskell.org/package/base/docs/System-IO.html}}. Your first task is to complete the definition of \haskellIn{extractFirstLine} which is given two file handles (values of type \haskellIn{Handle}) as arguments and should read the first line from the first handle and write it to the second handle. Check that your solution works by running \texttt{\small stack test} as usual.}
+
+\task{Complete the definition of \haskellIn{replicateFirstLine} which should read the first line from input file and write it to the output file five times.}
+
+\task{Complete the definition of \haskellIn{reverseFile} which should read all lines from the input file and write the lines in reverse order to the output file.}
+
+\taskLine \pagebreak
+
+\task{Complete the definition of \haskellIn{readKeyValuePair} which should parse a \haskellIn{String} value of the form \haskellIn{"key=value"} into a pair of the form \haskellIn{("key", "value")}. You may assume that the input string is always correctly formatted. Note that both keys and values may contain spaces.}
+
+\task{Complete the definition of \haskellIn{readDictionary} which should read all lines from the input file, each of which is of the form \haskellIn{"key=value"}, and use \haskellIn{readKeyValuePair} to convert them into corresponding key-value pairs.}
+
+\task{With the help of \haskellIn{readDictionary}, complete the definition of \haskellIn{writeGrandDucks}. This function takes three file paths as arguments: the location of a file containing key-value pairs that maps ducks to their parents, the location of a file containing the names of ducks (one per line), and the location of an output file. Unlike in the previous tasks, you will have to open the files yourself to obtain handles for them. For each line in the second file, try to determine the duck's grandduck using the mappings from the first file: if you can determine the grandduck, write its name to the output file. If you cannot determine the grandduck, write a dash to the output file. The output file should therefore end up with as many lines as the file that contains the input duck names. }
+
+Example dictionary file:
+\begin{minted}{text}
+Duckling=Parent duck
+Parent duck=The Ancient Quack
+\end{minted}
+
+Example duck list:
+\begin{minted}{text}
+Duckling
+Parent duck
+\end{minted}
+
+Example output:
+\begin{minted}{text}
+The Ancient Quack
+-
+
+\end{minted}

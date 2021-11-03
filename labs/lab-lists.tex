@@ -1,0 +1,44 @@
+\section{Lists} \label{sec:lab-lists}
+\topics{Lists, standard library functions on lists.}
+
+These exercises are about lists. As usual, you can obtain the skeleton code for the exercises by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-lists
+\end{minted}
+While arrays are a built-in data structure in imperative programming languages that can easily be used through built-in features in the languages, linked lists take the same role in functional programming languages. Linked lists consist of elements and each element consists of a head (the value of the element) and a tail (the next element or the empty list). In Haskell, the empty list is represented by \haskellIn{[]} and elements can be added to it with \haskellIn{:} (``cons''). For example, \haskellIn{108 : []} represents a list with one element \haskellIn{108}. This is quite ugly, so there is some syntactic sugar which lets us write lists as \emph{e.g.} \haskellIn{[1,2,3]} which is equivalent to \haskellIn{1 : 2 : 3 : []} which is equivalent to \haskellIn{1 : (2 : (3 : []))}.
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 2 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 3.3 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine 
+
+\task{There are three definitions for \haskellIn{numbers}, \haskellIn{numbers'}, and \haskellIn{numbers''} which show off a list without explicit brackets, with explicit brackets, and using the syntactic sugar respectively. Add the missing elements to \haskellIn{numbers'} and \haskellIn{numbers''} so that those two definitions represent the same list  as \haskellIn{numbers}.}
+
+\task{With the help of the \haskellIn{reverse} function from the standard library, which reverses lists, complete the definition of \haskellIn{isPalindrome} which checks whether a list of characters is a palindrome. For example:}
+\begin{minted}{haskell}
+isPalindrome "radar" ==> True 
+isPalindrome "2020"  ==> False
+\end{minted}
+
+\taskLine 
+
+Just like lists are constructed by ``cons''-ing elements to smaller lists, starting with the empty list, lists can be deconstructed through pattern-matching by ``uncons''-ing elements from the start of a list. For example, the \haskellIn{head} function returns the first element of a list and discards the rest:
+\begin{minted}{haskell}
+head :: [a] -> a 
+head (x:xs) = x
+\end{minted}
+We can have nested patterns so that \emph{e.g.} the following function will retrieve the second element of a list:
+\begin{minted}{haskell}
+headOfTail :: [a] -> a 
+headOfTail (x:y:xs) = y
+\end{minted}
+Note that this is not a function you should ever write though, since it will crash for any list that does not have at least two elements. The \haskellIn{head} function will also crash if it is given a list that does not have at least one element.
+
+\task{Complete the definition of \haskellIn{validModuleCode} which should determine whether a given argument is a valid Computer Science module code. For the purpose of this exercise, a valid module code consists of five characters: the letters \haskellIn{'c'} and \haskellIn{'s'}, followed by three digits. You may find the \haskellIn{isDigit} function from \haskellIn{Data.Char} useful. For example:}
+\begin{minted}{haskell}
+validModuleCode "cs141" => True 
+validModuleCode "cs263" => True
+validModuleCode "cs407" => True
+validModuleCode "es141" => False
+validModuleCode "cakes" => False
+validModuleCode "lie"   => False
+\end{minted}

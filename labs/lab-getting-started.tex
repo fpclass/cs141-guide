@@ -1,0 +1,76 @@
+\section{Getting started}
+
+The purpose of these first exercises is twofold: firstly, you will set up the tools that we use as part of the module and become acquainted with the basics of how they work; secondly you will encounter, compile, and improve an existing Haskell program. For these exercises, there is no expectation that you understand all of the code you see in front of you or that you accomplish anything in particular by the end of it. Indeed, these exercises are suitable for you even if you have not been to any of the lectures yet. Looking at existing codebases and changing a few values here and there is a great way to get a feel for what programs written in a particular programming language look like and, in the case of this module, what to expect later on. 
+
+\taskLine
+
+\task[ex:setup]{If you have not done so yet, you should set up your Haskell development environment now (see \Cref{sec:department-setup} and \Cref{sec:home-setup}). Most of the tools you need are already pre-installed on the departmental machines, but you must open a shell (with the Terminal application on the lab machines) and run the following command to make the \bashIn{stack} tool available on your user account (this only needs to be done once):}
+\begin{minted}{bash}
+$ /modules/cs141/haskell-setup.sh
+\end{minted}
+
+\taskLine
+
+\task{There is some skeleton code for most of the lab sessions, including this one. You can obtain the code for this practical by cloning it from GitHub which you can do by running the following command in your terminal window:}
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-getting-started
+\end{minted}
+By default, this will create a folder named \texttt{\small lab-getting-started} in the current working directory (your home directory, by default) with the skeleton code in it. Once you have cloned the repository, you may wish to verify that it compiles without any problems:
+\begin{minted}{text}
+$ cd lab-getting-started
+$ stack run
+\end{minted}
+If everything goes well, you should see some output along the lines of:
+\begin{minted}{text}
+Building all executables for 'hatch' once. 
+hatch-0.2.0.0: configure (exe)
+Configuring hatch-0.2.0.0...
+hatch-0.2.0.0: build (exe)
+Preprocessing executable 'hatch' for hatch-0.2.0.0..
+Building executable 'hatch' for hatch-0.2.0.0..
+[1 of 7] Compiling Layout           
+[2 of 7] Compiling Paths_hatch 
+[3 of 7] Compiling Transforms   
+[4 of 7] Compiling Images   
+[5 of 7] Compiling Hatch   
+[6 of 7] Compiling Lab     
+[7 of 7] Compiling Main  
+Linking .stack-work/dist/../build/hatch/hatch ...
+hatch-0.2.0.0: copy/register
+Installing executable hatch in /dcs/../bin
+\end{minted}
+A window should open with lovely animations. If so, congratulations: you have compiled and run your first Haskell program! The \texttt{\small stack} tool is correctly installed and works as expected -- you are now ready to work on the exercises! If you are not seeing a window with lovely animations, ask one of the lab tutors for assistance.
+
+\taskLine 
+
+There is a \texttt{\small src/Lab.hs} file in the \texttt{\small lab-getting-started} directory which contains some definitions responsible for rendering the lovely animation. You should open that file in your text editor of choice (see \Cref{ch:tools} for information about the text editors available to you). If you are using VSCode, the \bashIn{haskell-setup.sh} script you ran earlier will already have installed some Haskell-related plugins.
+
+\task[ex:open]{Open the \texttt{\small src/Lab.hs} file in your preferred text editor. Take a look at the definition of \haskellIn{animation}. At this point, you are not expected to understand everything you see and the purpose of this exercise is simply to experiment by changing code that is already there. Not everything you try may work, but that's okay! Here are some examples of things you could try before moving on to the next exercise sheet:}
+
+\begin{itemize}
+	\item Turn the spinning cat into a spinning dog.
+	\item Make the goose moonwalk away from the ducks.
+	\item Make the spinning cat spin the other way.
+	\item Make the goose run twice as fast.
+	\item Hide the dog behind a giant duck.
+\end{itemize}
+
+There are a number of pictures available, namely \texttt{\small cat}, \texttt{\small dog}, \texttt{\small duck}, \texttt{\small goose}, and \texttt{\small blank}. The standard mathematical operators (\haskellIn{+}, \haskellIn{-}, \haskellIn{*}) are also available, so you can perform calculations on values.
+
+A number of useful operators and expressions related to positioning and transforming images are also available:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+Function / Operator       & Description                                          \\ \hline
+\texttt{img1 <|> img2}    & Puts \mintinline{haskell}{img2} to the right of \mintinline{haskell}{img1}. \\
+\texttt{img1 <-> img2}    & Puts \mintinline{haskell}{img1} above \mintinline{haskell}{img2}.           \\
+\texttt{img1 <@> img2}    & Puts \mintinline{haskell}{img1} in front of \mintinline{haskell}{img2}.     \\
+\texttt{scale sf img2}    & Scales \mintinline{haskell}{img} by scale factor \mintinline{haskell}{sf}.  \\
+\texttt{offset tx ty img} & Moves \mintinline{haskell}{img}, \mintinline{haskell}{tx} pixels right and \mintinline{haskell}{ty} pixels up. \\
+\texttt{rotate deg img}   & Rotates \mintinline{haskell}{img} by \mintinline{haskell}{deg} degrees.     \\
+\texttt{mirror img}       & Reflects \mintinline{haskell}{img} through the y-axis.
+\end{tabular}
+\end{table}
+
+Note that the right hand side of \haskellIn{animation} depends on a parameter, \haskellIn{t}, which is the number of frames that have been rendered so far (30 per second typically). Using \haskellIn{t} in our calculations for positions, rotations, etc. allows us to change them as time progresses.

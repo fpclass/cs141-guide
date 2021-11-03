@@ -1,0 +1,189 @@
+\section{Proving a simple compiler correct}
+
+For our next example, we are going to take what we have learnt about equational reasoning so far in order to show that a simple compiler is \emph{correct}. Our compiler is going to compile expressions in an expression language to programs for a simple stack-based machine. We begin by implementing the types and functions required to represent the two different languages and to compile from one to the other.
+
+\subsection{The expression language}
+
+Let us begin by defining a data type named \haskellIn{Expr} in Haskell to represent expressions of the expression language (the compiler's \emph{source language}):
+\begin{minted}{haskell}
+data Expr = Val Int 
+          | Plus Expr Expr
+\end{minted}
+With this data type, we can represent values such as \haskellIn{Plus (Val 4) (Val 8)} and \haskellIn{Plus (Plus (Val 4) (Val 15)) (Val 8)} in Haskell. However, these values of type \texttt{\small Expr} have no meaning. Even though we may have an intuition for what these values represent due to the names that we have given to \texttt{\small Expr}'s data constructors, the names are completely arbitrary and we could have called them anything. To give meaning to values of this type, we need to implement a \emph{denotational semantics}, also known as an \emph{interpreter}:
+\begin{minted}{haskell}
+eval :: Expr -> Int 
+eval (Val n)    = n 
+eval (Plus l r) = eval l + eval r
+\end{minted}
+The \haskellIn{eval} function maps values of type \texttt{\small Expr} to values of type \texttt{\small Int} that represent the meaning we would intuitively associate with values of type \texttt{\small Expr}.
+
+\subsection{The instruction set}
+
+The \emph{target language} of our compiler is programs for a stack-based machine whose instructions are represented by the following data type in Haskell: 
+\begin{minted}{haskell}
+data Instr = PUSH Int | ADD 
+\end{minted}
+We also define a couple of type aliases to say that a list of \texttt{\small Instr} values represents a \texttt{\small Program} and that the machine's \texttt{\small Stack} is represented as a list of \texttt{\small Int} values:
+\begin{minted}{haskell}
+type Program = [Instr]
+type Stack   = [Int]
+\end{minted}
+Just like with our source language, values of type \texttt{\small Instr} or \texttt{\small Program} are meaningless until we give them a semantics, for example in the form of a Haskell function that implements an interpreter:
+\begin{minted}{haskell}
+exec :: Program -> Stack -> Stack 
+exec []                    s  = s 
+exec (PUSH n : p)          s  = exec p (n:s)
+exec (ADD    : p) (y : x : s) = exec p (x+y:s)
+\end{minted}
+We can see from this definition that the semantics of our programs are as follows. If we have an empty program, we just return the stack we are given. If the next instruction in the program is a \haskellIn{PUSH} instruction, we add its value to the top of the stack and continue executing the rest of the program. If the next instruction in the program is an \haskellIn{ADD} instruction, we take two values \haskellIn{y} and \haskellIn{x} off the top of the stack, add them up, and add the result to the stack we use to execute the rest of the program with.
+
+\subsection{The compiler}
+
+Now that we have data types to represent both expressions in our source language and programs in our target language, we can write a compiler to translate from the source language to the target language:
+\begin{minted}{haskell}
+comp :: Expr -> Program 
+comp (Val n)    = [PUSH n]
+comp (Plus l r) = comp l ++ comp r ++ [ADD]
+\end{minted}
+Values from our source language are just compiled to \haskellIn{PUSH} instructions. For \haskellIn{Plus} expressions, we compile the left sub-expression, then the right sub-expression, and then add an \haskellIn{ADD} instruction.
+
+\subsection{Compiler correctness}
+
+Now that we have defined types to represent our source and target languages, interpreters for both, as well as a compiler, we can prove that the compiler is correct.
+
+\paragraph{Compiler correctness} We say that our compiler is correct if evaluating an expression $e$ has the same result as executing the program that results from compiling an expression $e$:
+\begin{displaymath}
+\forall e :: \mathit{Expr}, s :: \mathit{Stack} ~.\quad \mathit{eval}~e : s = \mathit{exec}~(\mathit{comp}~e)~s
+\end{displaymath}
+Since there are infinitely-many possible values of \texttt{\small Expr}, the proof is by structural induction on $e$. The base case is for values $\mathit{Val}~n$. That is we want to show that:
+\begin{displaymath}
+\forall s :: \mathit{Stack}, n :: \mathit{Int} ~.\quad \mathit{eval}~(\mathit{Val}~n) : s = \mathit{exec}~(\mathit{comp}~(\mathit{Val}~n))~s
+\end{displaymath}
+As usual, we pick one side of the equation and start to simplify it:
+\begin{align*}
+\expr{\mathit{eval}~(\mathit{Val}~n) : s}
+\hint{applying $\mathit{eval}$}
+\lastexpr{n : s}
+\end{align*}
+As we are kind of stuck at this point with just $n:s$, we decide to pick up with the other side of the equation and simplify that: 
+\begin{align*}
+\expr{\mathit{exec}~(\mathit{comp}~(\mathit{Val}~n))~s}
+\hint{applying $\mathit{comp}$}
+\expr{\mathit{exec}~\hslist{\mathit{PUSH}~n}~s}
+\hint{applying $\mathit{exec}$}
+\expr{\mathit{exec}~\hslist{}~(n:s)}
+\hint{applying $\mathit{exec}$}
+\lastexpr{n : s}
+\end{align*}
+As shown, both sides of the equation can be simplified to the same expression. Therefore the base case holds. The inductive step of our proof is to show that the following holds:
+\begin{displaymath}
+\forall s :: \mathit{Stack}~.\quad \mathit{eval}~(\mathit{Plus}~l~r) : s = \mathit{exec}~(\mathit{comp}~(\mathit{Plus}~l~r))~s
+\end{displaymath}
+Since the $\mathit{Plus}$ constructor has two parameters of type $\mathit{Expr}$, we have two induction hypotheses, one for $l$ and one for $r$:
+\begin{displaymath}
+\begin{array}{ll}
+\mathbf{IH1}: \qquad & \forall s :: \mathit{Stack}~.\quad \mathit{eval}~l : s = \mathit{exec}~(\mathit{comp}~l)~s \\
+\mathbf{IH2}: \qquad & \forall s :: \mathit{Stack}~.\quad \mathit{eval}~r : s = \mathit{exec}~(\mathit{comp}~r)~s 
+\end{array}
+\end{displaymath}
+We can now prove that the inductive step is also true by simplifying both sides of the equation until we end up with the same expression. Let's start with the left side:
+\begin{align*}
+\expr{\mathit{eval}~(\mathit{Plus}~l~r) : s}
+\hint{applying $\mathit{eval}$}
+\lastexpr{(\mathit{eval}~l + \mathit{eval}~r) : s}
+\end{align*}
+We are quickly stuck here with no obvious way to proceed. Let's try the right side of the equation instead:
+\begin{align*}
+\expr{\mathit{exec}~(\mathit{comp}~(\mathit{Plus}~l~r))~s}
+\hint{applying $\mathit{comp}$}
+\lastexpr{\mathit{exec}~(\mathit{comp}~l \append \mathit{comp}~r \append \hslist{\mathit{ADD}})~s}
+\end{align*}
+Again, we get stuck fairly quickly here. Unfortunately, as in previous examples, we have not ended up with the same expression by simplifying both sides of the equation. However, this is an inductive proof and we are in the inductive case, so we have the induction hypotheses available -- maybe they could help us? Unfortunately, this is also not the case. If we look at $\mathbf{IH1}$ and $\mathbf{IH2}$, we can see that neither is applicable to the expression we have right now. We need to find a way to transform our expression so that the induction hypotheses can be applied to it.
+
+\paragraph{Distributivity lemma} Often when proving more complicated properties about functions, we depend on other properties of functions to help us out. One such property which states that executing a program where a list of instructions $\mathit{xs}$ is followed by a list of instructions $\mathit{ys}$ is the same as first executing $\mathit{xs}$ and then executing $\mathit{ys}$ with the stack that results from executing $\mathit{xs}$:
+\begin{displaymath}
+\forall \mathit{xs}~\mathit{ys} :: \mathit{Program}, s :: \mathit{Stack} ~.\quad \mathit{exec}~(\mathit{xs} \append \mathit{ys})~s = \mathit{exec}~\mathit{ys}~(\mathit{exec}~\mathit{xs}~s)
+\end{displaymath}
+The proof for this lemma is by induction on $\mathit{xs}$. As usual with induction on lists, the base case is for the empty list $\hslist{}$:
+\begin{displaymath}
+\forall \mathit{ys} :: \mathit{Program}, s :: \mathit{Stack} ~.\quad \mathit{exec}~(\hslist{} \append \mathit{ys})~s = \mathit{exec}~\mathit{ys}~(\mathit{exec}~\hslist{}~s)
+\end{displaymath}
+Let us start with the right side of the equation where there is only one step to perform before we cannot simplify the expression any further:
+\begin{align*}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~\hslist{}~s)}
+\hint{applying inner $\mathit{exec}$}
+\lastexpr{\mathit{exec}~\mathit{ys}~s}
+\end{align*}
+The left side of the equation is similarly easy and follows directly from the definition of $\append$:
+\begin{align*}
+\expr{(\mathit{exec}~(\hslist{} \append \mathit{ys})~s)}
+\hint{applying $\append$}
+\lastexpr{\mathit{exec}~\mathit{ys}~s}
+\end{align*}
+With this, we have proved the base case. We can now move on to the inductive step:
+\begin{displaymath}
+\forall \mathit{ys} :: \mathit{Program}, s :: \mathit{Stack}, x :: \mathit{Instr} ~.\quad \mathit{exec}~((x:\mathit{xs}) \append \mathit{ys})~s = \mathit{exec}~\mathit{ys}~(\mathit{exec}~(x:\mathit{xs})~s)
+\end{displaymath}
+Our induction hypothesis is that the lemma holds for $\mathit{xs}$:
+\begin{displaymath}
+\forall \mathit{ys} :: \mathit{Program}, s :: \mathit{Stack} ~.\quad \mathit{exec}~(\mathit{xs} \append \mathit{ys})~s = \mathit{exec}~\mathit{ys}~(\mathit{exec}~\mathit{xs}~s)
+\end{displaymath}
+Let us again being with the right side of the equation:
+\begin{align*}
+\lastexpr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~(x:\mathit{xs})~s)}
+\end{align*}
+We are immediately stuck here, because we cannot simplify the expression any further without knowing what $x$ is. To deal with this problem, we simply perform case-analysis on $x$. We begin with the case where $x = \mathit{PUSH}~n$:
+\begin{align*}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~(\mathit{PUSH}~n:\mathit{xs})~s)}
+\hint{applying inner $\mathit{exec}$}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~\mathit{xs}~(n:s))}
+\hint{induction hypothesis}
+\expr{\mathit{exec}~(\mathit{xs} \append \mathit{ys})~(n:s)}
+\hint{unapplying $\mathit{exec}$}
+\expr{\mathit{exec}~(\mathit{PUSH}~n : (\mathit{xs} \append \mathit{ys}))~s}
+\hint{unapplying $\append$}
+\lastexpr{\mathit{exec}~((\mathit{PUSH}~n : \mathit{xs}) \append \mathit{ys})~s}
+\end{align*}
+The inductive step holds for the case where we have a $\mathit{PUSH}$ instruction. What about the case where we have an $\mathit{ADD}$ instruction:
+\begin{align*}
+\lastexpr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~(\mathit{ADD}:\mathit{xs})~s)}
+\end{align*}
+We immediately have a problem. The third equation of $\mathit{exec}$ (which deals with $\mathit{ADD}$ instructions) requires there to be at least two elements on the stack. We could perform induction on $s$ at this point to explore values for the stack, but we do not need to do that to notice that this will not work. $\mathit{ADD}$ requires at least two values on the stack, so if we perform induction we will end up with cases where the stack is empty or only contains one element. In fact, the $\mathit{exec}$ function is partial and not every input is mapped to a result as is the case here. Is our compiler wrong? Well, the problem is solely in the $\mathit{exec}$ function. Our compiler $\mathit{comp}$, however, will never actually generate code where not at least two values are pushed onto the stack before an $\mathit{ADD}$ instruction. We could prove that this is the case, but it would be rather complicated. So instead, we will just continue with the assumption that the stack has at least two elements:
+\begin{align*}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~(\mathit{ADD}:\mathit{xs})~s)}
+\hint{assume $s = b : a : s'$}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~(\mathit{ADD}:\mathit{xs})~(b : a : s')}
+\hint{applying $\mathit{exec}$}
+\expr{\mathit{exec}~\mathit{ys}~(\mathit{exec}~\mathit{xs}~(a+b : s')}
+\hint{induction hypothesis}
+\expr{\mathit{exec}~(\mathit{xs} \append \mathit{ys})~(a+b : s')}
+\hint{unapplying $\mathit{exec}$}
+\expr{\mathit{exec}~(\mathit{ADD} : (\mathit{xs} \append \mathit{ys}))~(b : a : s')}
+\hint{unapplying $\append$}
+\expr{\mathit{exec}~((\mathit{ADD} : \mathit{xs}) \append \mathit{ys})~(b : a : s')}
+\hint{assumption for $s$}
+\lastexpr{\mathit{exec}~((\mathit{ADD} : \mathit{xs}) \append \mathit{ys})~s}
+\end{align*}
+This concludes the proof for the inductive case where we have an $\mathit{ADD}$ instruction and it also concludes the proof for our distributivity lemma. We can now return to our main proof where we were stuck on:
+\begin{align*}
+\lastexpr{\mathit{exec}~(\mathit{comp}~l \append \mathit{comp}~r \append \hslist{\mathit{ADD}})~s}
+\end{align*}
+With the help of our distributivity lemma, we can now rewrite this expression into a suitable form for the induction hypotheses:
+\begin{align*}
+\expr{\mathit{exec}~(\mathit{comp}~l \append \mathit{comp}~r \append \hslist{\mathit{ADD}})~s}
+\hint{associativity of $\append$}
+\expr{\mathit{exec}~(\mathit{comp}~l \append (\mathit{comp}~r \append \hslist{\mathit{ADD}}))~s}
+\hint{distributivity lemma}
+\expr{\mathit{exec}~(\mathit{comp}~r \append \hslist{\mathit{ADD}})~(\mathit{exec}~(\mathit{comp}~l)~s)}
+\hint{distributivity lemma}
+\expr{\mathit{exec}~\hslist{\mathit{ADD}}~(\mathit{exec}~(\mathit{comp}~r)~(\mathit{exec}~(\mathit{comp}~l)~s))}
+\hint{induction hypothesis $\mathbf{IH1}$}
+\expr{\mathit{exec}~\hslist{\mathit{ADD}}~(\mathit{exec}~(\mathit{comp}~r)~(\mathit{eval}~l : s))}
+\hint{induction hypothesis $\mathbf{IH2}$}
+\expr{\mathit{exec}~\hslist{\mathit{ADD}}~(\mathit{eval}~r : (\mathit{eval}~l : s))}
+\hint{applying $\mathit{exec}$}
+\expr{\mathit{exec}~\hslist{}~((\mathit{eval}~l + \mathit{eval}~r) : s)}
+\hint{applying $\mathit{exec}$}
+\lastexpr{(\mathit{eval}~l + \mathit{eval}~r) : s}
+\end{align*}
+This expression now exactly matches the one we obtained by rewriting the left side of the equation earlier. Therefore, the inductive step is proved and the proof is complete.

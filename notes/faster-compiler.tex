@@ -1,0 +1,145 @@
+\section{Calculating a faster compiler}
+
+We have shown that our compiler \haskellIn{comp} is correct, but our current implementation is very slow. To illustrate this, let us use reduction steps as a metric for performance. For example, if compile the expression \haskellIn{Plus (Plus (Val 4) (Val 15)) (Val 8)} using \haskellIn{comp}, it would require 15 reduction steps:
+
+\begin{minted}{haskell}
+   comp (Plus (Plus (Val 4) (Val 15)) (Val 8))
+=> comp (Plus (Val 4) (Val 15)) ++ (comp (Val 8) ++ [ADD])
+=> (comp (Val 4) ++ (comp (Val 15) ++ [ADD])) ++ 
+   (comp (Val 8) ++ [ADD])
+=> ([PUSH 4] ++ (comp (Val 15) ++ [ADD])) ++ 
+   (comp (Val 8) ++ [ADD])
+=> (PUSH 4 : ([] ++ (comp (Val 15) ++ [ADD]))) ++ 
+   (comp (Val 8) ++ [ADD])
+=> (PUSH 4 : (comp (Val 15) ++ [ADD])) ++ 
+   (comp (Val 8) ++ [ADD])
+=> (PUSH 4 : ([PUSH 15] ++ [ADD])) ++ 
+   (comp (Val 8) ++ [ADD])
+=> (PUSH 4 : (PUSH 15 : ([] ++ [ADD]))) ++ 
+   (comp (Val 8) ++ [ADD])
+=> (PUSH 4 : (PUSH 15 : [ADD])) ++ 
+   (comp (Val 8) ++ [ADD])
+== (PUSH 4 : (PUSH 15 : (ADD : []))) ++ 
+   (comp (Val 8) ++ [ADD])
+=> PUSH 4 : ((PUSH 15 : (ADD : [])) ++ 
+   (comp (Val 8) ++ [ADD]))
+=> PUSH 4 : (PUSH 15 : ((ADD : []) ++ 
+   (comp (Val 8) ++ [ADD])))
+=> PUSH 4 : (PUSH 15 : (ADD : ([] ++ 
+   (comp (Val 8) ++ [ADD]))))
+=> PUSH 4 : (PUSH 15 : (ADD : 
+   (comp (Val 8) ++ [ADD])))
+=> PUSH 4 : (PUSH 15 : (ADD : 
+   ([PUSH 8] ++ [ADD])))
+=> PUSH 4 : (PUSH 15 : (ADD : 
+   (PUSH 8 : ([] ++ [ADD]))))
+=> PUSH 4 : (PUSH 15 : (ADD : 
+   (PUSH 8 : [ADD])))  
+== [PUSH 4, PUSH 15, ADD, PUSH 8, ADD] 
+\end{minted}
+As we can see, a lot of reduction steps are spent evaluating the results of applying \haskellIn{(++)}. This is because \haskellIn{(++)} requires a number of evaluation steps linear to the size of the first argument. For example, for the empty list, it requires one evaluation step:
+\begin{minted}{haskell}
+   [] ++ ys 
+=> ys
+\end{minted}
+For a list with one element, it requires two evaluation steps:
+\begin{minted}{haskell}
+   [x] ++ ys 
+=> x : ([] ++ ys)
+=> x : ys
+\end{minted}
+Indeed, the number of evaluation steps required to reduce \haskellIn{xs ++ ys} for all lists \haskellIn{xs} and \haskellIn{ys} is the number of elements in the first argument + 1, i.e. \haskellIn{length xs + 1}. 
+
+So far we have seen how to use induction to prove properties (or equalities) about our programs. However, we can also use induction \emph{constructively}. To illustrate this, we are going to use induction to calculate a faster version of \haskellIn{comp} which requires fewer reduction steps for every given input. This process is known as \emph{constructive induction}. The first step of this process is to come up with a \emph{specification} that should be satisfied by the function we are trying to construct. For our new, faster compiler, we wish to construct a new function \haskellIn{comp'} so that the following specification holds:
+\begin{displaymath}
+\forall e :: \mathit{Expr}, p :: \mathit{Program} ~.\quad \mathit{comp'}~e~p = \mathit{comp}~e \append p 
+\end{displaymath}
+Coming up with such a specification is the difficult part of the constructive induction process. For our \haskellIn{comp} function, we observed that our use of the $\append$ operator contributes significantly to the number of reduction steps required to compile an expression. Therefore, our specification for \haskellIn{comp'} effectively says that it should combine the behaviour of \haskellIn{comp} and $\append$. Our hope here is that the definition of \haskellIn{comp'} will be able to construct the resulting programs more efficiently. Let's see what happens.
+
+Once we have a specification, the next step is come up with the definition for the function we are trying to construct. In this case, we will do that by induction on $e$, leaving us with the following two cases:
+\begin{displaymath}
+\begin{array}{lcl}
+\forall p :: \mathit{Program} ~.\quad \mathit{comp'}~(\mathit{Val}~n)~p & = & \mathit{comp}~(\mathit{Val}~n) \append p \\
+\forall p :: \mathit{Program} ~.\quad \mathit{comp'}~(\mathit{Plus}~l~r)~p & = & \mathit{comp}~(\mathit{Plus}~l~r) \append p 
+\end{array}
+\end{displaymath}
+The left-hand sides of the two equations will form the left-hand sides of the definition of \haskellIn{comp'}:
+\begin{minted}{haskell}
+comp' :: Expr -> Program -> Program 
+comp' (Val n)    p = ???
+comp' (Plus l r) p = ???
+\end{minted}
+All we need to do now is figure out what the right-hand sides of the two equations should be. We do this by taking the right-hand sides of the two cases shown above and reducing them as much as possible. For example, if we take the right-hand side of $\mathit{Val}~n$ case we can simplify it as follows: 
+\begin{align*}
+\expr{\mathit{comp}~(\mathit{Val}~n) \append p}
+\hint{applying $\mathit{comp}$}
+\expr{\hslist{\mathit{PUSH}~n} \append p}
+\hint{applying $\append$}
+\expr{\mathit{PUSH}~n : (\hslist{} \append p)}
+\hint{applying $\append$}
+\lastexpr{\mathit{PUSH}~n : p}
+\end{align*}
+The expression we have ended up with cannot be reduced any further and, therefore, we will now use it as the right-hand side of the first equation that defines \haskellIn{comp'}:
+\begin{minted}{haskell}
+comp' :: Expr -> Program -> Program 
+comp' (Val n)    p = PUSH n : p
+comp' (Plus l r) p = ???
+\end{minted}
+For the second equation, we start with $\mathit{comp}~(\mathit{Plus}~l~r) \append p$ and follow the same process. However, it is essential to note that we are performing induction and this is an inductive case. Therefore, we have two inductive hypotheses:
+\begin{displaymath}
+\begin{array}{llcl}
+\mathbf{IH1} & \forall p :: \mathit{Program} ~.\quad \mathit{comp'}~l~p & = & \mathit{comp}~l \append p \\
+\mathbf{IH2} & \forall p :: \mathit{Program} ~.\quad \mathit{comp'}~r~p & = & \mathit{comp}~r \append p 
+\end{array}
+\end{displaymath}
+We can now begin simplifying the expression:
+\begin{align*}
+\expr{\mathit{comp}~(\mathit{Plus}~l~r) \append p}
+\hint{applying $\mathit{comp}$}
+\lastexpr{(\mathit{comp}~l \append (\mathit{comp}~r \append \hslist{\mathit{ADD}})) \append p}
+\end{align*}
+At this point, we could apply the inductive hypotheses as follows:
+\begin{align*}
+\expr{(\mathit{comp}~l \append (\mathit{comp}~r \append \hslist{\mathit{ADD}})) \append p}
+\hint{applying $\mathbf{IH2}$}
+\expr{(\mathit{comp}~l \append (\mathit{comp'}~r~ \hslist{\mathit{ADD}})) \append p}
+\hint{applying $\mathbf{IH1}$}
+\lastexpr{(\mathit{comp'}~l~(\mathit{comp'}~r~ \hslist{\mathit{ADD}})) \append p}
+\end{align*}
+However, the expression we end up with by taking this approach still contains $\append$ and cannot be simplified any further. We can do better. In Exercise \ref{task:append-assoc}, you prove the associativity of the $\append$ operator. With the help of that property, we can rewrite the initial expression slightly so that we can eliminate the occurrence of the $\append$ operator before applying the two inductive hypotheses:\allowdisplaybreaks
+\begin{align*}\allowdisplaybreaks
+\expr{(\mathit{comp}~l \append (\mathit{comp}~r \append \hslist{\mathit{ADD}})) \append p}
+\hint{associativity of $\append$}
+\expr{\mathit{comp}~l \append ((\mathit{comp}~r \append \hslist{\mathit{ADD}}) \append p)}
+\hint{associativity of $\append$}
+\expr{\mathit{comp}~l \append (\mathit{comp}~r \append (\hslist{\mathit{ADD}} \append p))}
+\hint{applying $\append$}
+\expr{\mathit{comp}~l \append (\mathit{comp}~r \append (\mathit{ADD} : (\hslist{} \append p)))}
+\hint{applying $\append$}
+\expr{\mathit{comp}~l \append (\mathit{comp}~r \append (\mathit{ADD} : p))}
+\hint{applying $\mathbf{IH2}$}
+\expr{\mathit{comp}~l \append (\mathit{comp'}~r~(\mathit{ADD} : p))}
+\hint{applying $\mathbf{IH1}$}
+\lastexpr{\mathit{comp'}~l~(\mathit{comp'}~r~(\mathit{ADD} : p))}
+\end{align*}
+The expression we end up with here does no longer contain the $\append$ operator and we can now happily use it in our definition of \haskellIn{comp'}:
+\begin{minted}{haskell}
+comp' :: Expr -> Program -> Program 
+comp' (Val n)    p = PUSH n : p
+comp' (Plus l r) p = comp' l (comp' r (ADD : p))
+\end{minted}
+To test that this is actually more efficient than our definition of \haskellIn{comp}, let us try to compile the same expression we compiler earlier using \haskellIn{comp} but this time using \haskellIn{comp'} where we simply provide the empty program \haskellIn{[]} as the second argument:
+\begin{minted}{haskell}
+   comp' (Plus (Plus (Val 4) (Val 15)) (Val 8)) []
+=> comp' (Plus (Val 4) (Val 15)) (comp' (Val 8) (ADD : []))
+=> comp' (Plus (Val 4) (Val 15)) (PUSH 8 : (ADD : []))
+=> comp' (Val 4) (comp' (Val 15) (PUSH 8 : (ADD : []))) 
+=> comp' (Val 4) (PUSH 15 : (PUSH 8 : (ADD : []))) 
+=> PUSH 4 : (PUSH 15 : (PUSH 8 : (ADD : []))) 
+== [PUSH 4, PUSH 15, ADD, PUSH 8, ADD] 
+\end{minted}
+As we can see, the program can now be compiled in 5 reduction steps as opposed to 15 reduction steps that were required previously with \haskellIn{comp}. Furthermore, we can now redefine \haskellIn{comp} in terms of \haskellIn{comp'}:
+\begin{minted}{haskell}
+comp :: Expr -> Program 
+comp e = comp' e []
+\end{minted}

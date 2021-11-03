@@ -1,0 +1,266 @@
+\section{Equational reasoning}
+
+\subsubsection{Induction on natural numbers}
+
+\solution{\ref{task:succ-comm}}{For this task, we need to prove the following property of addition which states that adding the successor of zero to some number $n$ is the same as the successor of $n$:}
+\begin{displaymath}
+\forall n :: \mathit{Nat} . S~n = \mathit{add}~(S~Z)~n
+\end{displaymath}
+The proof can simply be done by rewriting one side of the equation to the other:
+\begin{align*}
+\expr{\mathit{add}~(S~Z)~n}
+\hint{applying $\mathit{add}$}
+\expr{S~(\mathit{add}~Z~n)}
+\hint{applying $\mathit{add}$}
+\lastexpr{S~n}
+\end{align*}
+
+\solution{\ref{task:successor-commutes}}{For this task, we need to prove another property of addition which states that the adding the successor of some number $n$ to some other number $m$ is the same as adding $n$ to the successor of $m$:}
+\begin{displaymath}
+\forall n~m :: \mathit{Nat} . \mathit{add}~(S~n)~m = \mathit{add}~n~(S~m)
+\end{displaymath}
+This proof is by induction on $n$. First we prove the base case for $Z$:
+\begin{align*}
+\expr{\mathit{add}~(S~Z)~m}
+\hint{property proved in \textbf{Ex\ref{task:succ-comm}} that $\forall n.\mathit{add}~(S~Z)~n=S~n$}
+\expr{S~m}
+\hint{unapplying $\mathit{add}$}
+\lastexpr{\mathit{add}~Z~(S~m)}
+\end{align*}
+Then we prove the inductive case for $S~n$. Our induction hypothesis is that:
+\begin{displaymath}
+\forall m :: \mathit{Nat} . \mathit{add}~(S~n)~m = \mathit{add}~n~(S~m)
+\end{displaymath}
+As usual, we pick one side of the equation and rewrite it to the other side:
+\begin{align*}
+\expr{\mathit{add}~(S~(S~n))~m}
+\hint{applying $\mathit{add}$}
+\expr{S~(\mathit{add}~(S~n)~m)}
+\hint{induction hypothesis}
+\expr{S~(\mathit{add}~n~(S~m))}
+\hint{unapplying $\mathit{add}$}
+\lastexpr{\mathit{add}~(S~n)~(S~m)}
+\end{align*}
+
+\solution{\ref{task:add-commutes}}{For this task, we need to prove that addition is commutative:}
+\begin{displaymath}
+\forall n~m :: \mathit{Nat} . \mathit{add}~n~m = \mathit{add}~m~n
+\end{displaymath}
+As there is no obvious way for us to start rewriting either side of the equation, we perform induction on $n$. First we prove the base case for $Z$:
+\begin{align*}
+\expr{\mathit{add}~Z~m}
+\hint{applying $\mathit{add}$}
+\expr{m}
+\hint{right identity of $\mathit{add}$, proved in \Cref{sec:lecture-10}}
+\lastexpr{\mathit{add}~m~Z}
+\end{align*}
+Now we can move on to the inductive step for $S~n$, for which our induction hypothesis is as follows:
+\begin{displaymath}
+\forall m :: \mathit{Nat} . \mathit{add}~n~m = \mathit{add}~m~n
+\end{displaymath}
+Using this, we can then conclude the proof:
+\begin{align*}
+\expr{\mathit{add}~(S~n)~m}
+\hint{applying $\mathit{add}$}
+\expr{S~(\mathit{add}~n~m)}
+\hint{induction hypothesis}
+\expr{S~(\mathit{add}~m~n)}
+\hint{unapplying $\mathit{add}$}
+\expr{\mathit{add}~(S~m)~n}
+\hint{property proved for \textbf{Ex\ref{task:successor-commutes}}}
+\lastexpr{\mathit{add}~m~(S~n)}
+\end{align*}
+
+\subsubsection{Induction on lists}
+
+\solution{\ref{task:reverse-identity-left}}{For this task, we need to prove the following property about $\append$ which says that its left identity is $\hslist{}$:}
+\begin{displaymath}
+\forall \mathit{xs} :: \hslist{a}~. \quad \hslist{} \append \mathit{xs} = \mathit{xs}
+\end{displaymath}
+We can prove this property easily just by rewriting one side of the equation into the other:
+\begin{align*}
+\expr{\hslist{} \append \mathit{xs}}
+\hint{applying $\append$}
+\lastexpr{\mathit{xs}}
+\end{align*}
+
+\solution{\ref{task:reverse-identity-right}}{For this task, we need to prove the following property about $\append$ which says that its right identity is $\hslist{}$:}
+\begin{displaymath}
+\forall \mathit{xs} :: \hslist{a}~. \quad \mathit{xs} \append \hslist{} = \mathit{xs}
+\end{displaymath}
+This proof is by induction on $\mathit{xs}$. The base case is for the empty list:
+\begin{align*}
+\expr{\hslist{} \append \hslist{}}
+\hint{applying $\append$}
+\lastexpr{\hslist{}}
+\end{align*}
+For the inductive case where we prove the property for $x:\mathit{xs}$, our induction hypothesis is:
+\begin{displaymath}
+\mathit{xs} \append \hslist{} = \mathit{xs}
+\end{displaymath}
+The proof is as follows:
+\begin{align*}
+\expr{(x:\mathit{xs}) \append \hslist{}}
+\hint{applying $\append$}
+\expr{x : (\mathit{xs} \append \hslist{})}
+\hint{induction hypothesis}
+\expr{x : \mathit{xs}}
+\end{align*}
+
+\solution{\ref{task:append-assoc}}{For this task, we need to prove that $\append$ is associative:}
+\begin{displaymath}
+\forall \mathit{xs}~\mathit{ys}~\mathit{zs} :: \hslist{a}~. \quad \mathit{xs} \append (\mathit{ys} \append \mathit{zs}) = (\mathit{xs} \append \mathit{ys}) \append \mathit{zs}
+\end{displaymath}
+This proof is by induction on $\mathit{xs}$ and the base case is as usual for the empty list:
+\begin{align*}
+\expr{\hslist{} \append (\mathit{ys} \append \mathit{zs})}
+\hint{applying $\append$}
+\expr{\mathit{ys} \append \mathit{zs}}
+\hint{unapplying $\append$}
+\lastexpr{(\hslist{} \append \mathit{ys}) \append \mathit{zs}}
+\end{align*}
+We can now move on to the inductive step. Our induction hypothesis is:
+\begin{displaymath}
+\forall \mathit{ys}~\mathit{zs} :: \hslist{a}~. \quad \mathit{xs} \append (\mathit{ys} \append \mathit{zs}) = (\mathit{xs} \append \mathit{ys}) \append \mathit{zs}
+\end{displaymath}
+The inductive step is for $x:\mathit{xs}$:
+\begin{align*}
+\expr{(x:\mathit{xs}) \append (\mathit{ys} \append \mathit{zs})}
+\hint{applying $\append$}
+\expr{x: (\mathit{xs} \append (\mathit{ys} \append \mathit{zs}))}
+\hint{induction hypothesis}
+\expr{x : ((\mathit{xs} \append \mathit{ys}) \append \mathit{zs})}
+\hint{unapplying $\append$}
+\expr{(x : (\mathit{xs} \append \mathit{ys})) \append \mathit{zs}}
+\hint{unapplying $\append$}
+\lastexpr{((x:\mathit{xs}) \append \mathit{ys}) \append \mathit{zs}}
+\end{align*}
+
+\solution{\ref{task:reverse-preserves}}{For this task, we need to prove that $\mathit{reverse}$, given a singleton list, evaluates to the same singleton list:}
+\begin{displaymath}
+\forall \mathit{x} :: a~. \quad \mathit{reverse}~\hslist{x} = \hslist{x}
+\end{displaymath}
+We can prove this simply by rewriting one side of the equation:
+\begin{align*}
+\expr{\mathit{reverse}~\hslist{x}}
+\hint{applying $\mathit{reverse}$}
+\expr{\mathit{reverse}~\hslist{} \append \hslist{x}}
+\hint{applying $\mathit{reverse}$}
+\expr{\hslist{} \append \hslist{x}}
+\hint{applying $\append$}
+\lastexpr{\hslist{x}}
+\end{align*}
+
+\solution{\ref{task:reverse-distributes-over-append}}{For this task, we need to prove that $\mathit{reverse}$ distributes over $\append$:}
+\begin{displaymath}
+\forall \mathit{xs}~\mathit{ys} :: \hslist{a}~. \quad \mathit{reverse}~(\mathit{xs} \append \mathit{ys}) = \mathit{reverse}~\mathit{ys} \append \mathit{reverse}~\mathit{xs}
+\end{displaymath}
+This proof is by induction on $\mathit{xs}$ and the base case is, as usual, for the empty list:
+\begin{align*}
+\expr{\mathit{reverse}~(\hslist{} \append \mathit{ys})}
+\hint{applying $\append$}
+\expr{\mathit{reverse}~\mathit{ys}}
+\hint{property proved in \textbf{Ex\ref{task:reverse-identity-right}}}
+\expr{\mathit{reverse}~\mathit{ys} \append \hslist{}}
+\hint{unapplying $\mathit{reverse}$}
+\lastexpr{\mathit{reverse}~\mathit{ys} \append \mathit{reverse}~\hslist{}}
+\end{align*}
+Our induction hypothesis is:
+\begin{displaymath}
+\forall \mathit{ys} :: \hslist{a}~. \quad \mathit{reverse}~(\mathit{xs} \append \mathit{ys}) = \mathit{reverse}~\mathit{ys} \append \mathit{reverse}~\mathit{xs}
+\end{displaymath}
+The inductive step for $x:\mathit{xs}$ is:
+\begin{align*}
+\expr{\mathit{reverse}~((x:\mathit{xs}) \append \mathit{ys})}
+\hint{applying $\append$}
+\expr{\mathit{reverse}~(x:(\mathit{xs} \append \mathit{ys}))}
+\hint{applying $\mathit{reverse}$}
+\expr{\mathit{reverse}~(\mathit{xs} \append \mathit{ys}) \append \hslist{x}}
+\hint{induction hypothesis}
+\expr{(\mathit{reverse}~\mathit{ys} \append \mathit{reverse}~\mathit{xs}) \append \hslist{x}}
+\hint{associativity of $\append$ proved for \textbf{Ex\ref{task:append-assoc}}}
+\expr{\mathit{reverse}~\mathit{ys} \append (\mathit{reverse}~\mathit{xs} \append \hslist{x})}
+\hint{unapplying $\mathit{reverse}$}
+\lastexpr{\mathit{reverse}~\mathit{ys} \append \mathit{reverse}~(x:\mathit{xs})}
+\end{align*}
+
+\solution{\ref{task:reverse-of-reverse}}{For this task, we need to prove that the reverse of the reverse of a list is just the list we start with:}
+\begin{displaymath}
+\forall \mathit{xs} :: \hslist{a}~. \quad \mathit{reverse}~(\mathit{reverse}~\mathit{xs}) = \mathit{xs}
+\end{displaymath}
+The proof is by induction on $\mathit{xs}$. As usual, the base case is for the empty list:
+\begin{align*}
+\expr{\mathit{reverse}~(\mathit{reverse}~\hslist{})}
+\hint{applying $\mathit{reverse}$}
+\expr{\mathit{reverse}~\hslist{}}
+\hint{applying $\mathit{reverse}$}
+\lastexpr{\hslist{}}
+\end{align*}
+This concludes the proof for the base case. Now we need to move on with the inductive case for $x : \mathit{xs}$. Our induction hypothesis is:
+\begin{displaymath}
+\mathit{reverse}~(\mathit{reverse}~\mathit{xs}) = \mathit{xs}
+\end{displaymath}
+The proof for the inductive case is then:
+\begin{align*}
+\expr{\mathit{reverse}~(\mathit{reverse}~(x:\mathit{xs}))}
+\hint{applying $\mathit{reverse}$}
+\expr{\mathit{reverse}~(\mathit{reverse}~\mathit{xs} \append \hslist{x})}
+\hint{$\mathit{reverse}$ distributes over $\append$, proved for \textbf{Ex\ref{task:reverse-distributes-over-append}}}
+\expr{\mathit{reverse}~\hslist{x} \append \mathit{reverse}~(\mathit{reverse}~\mathit{xs})}
+\hint{$\mathit{reverse}$ of a singleton list, proved for \textbf{Ex\ref{task:reverse-preserves}}}
+\expr{\hslist{x} \append \mathit{reverse}~(\mathit{reverse}~\mathit{xs})}
+\hint{induction hypothesis}
+\expr{\hslist{x} \append \mathit{xs}}
+\hint{applying $\append$}
+\expr{x : (\hslist{} \append \mathit{xs})}
+\hint{applying $\append$}
+\lastexpr{x : \mathit{xs}}
+\end{align*}
+This concludes the proof.
+
+\subsubsection{Constructive induction}
+
+\solution{\ref{task:rev-empty}}{For this task, we simply need to simplify the following expression until we cannot simplify it any further. The resulting expression is then used as the RHS of the first equation for the $\mathit{rev}$ function we are trying to define:}
+\begin{align*}
+\expr{\mathit{reverse}~\hslist{} \append \mathit{ys}}
+\hint{applying $\mathit{reverse}$}
+\expr{\hslist{} \append \mathit{ys}}
+\hint{applying $\append$}
+\lastexpr{\mathit{ys}}
+\end{align*}
+This expression cannot be simplified any further and we therefore use it as the RHS of our definition for the new $\mathit{rev}$ function:
+\begin{minted}{haskell}
+rev :: [a] -> [a] -> [a]
+rev []     ys = ys
+rev (x:xs) ys = ???
+\end{minted} 
+
+\solution{\ref{task:rev-cons}}{For this task, we simply need to simplify the following expression until we cannot simplify it any further. The resulting expression is then used as the RHS of the first equation for the $\mathit{rev}$ function we are trying to define. We also have access to the following induction hypothesis:}
+\begin{displaymath}
+\forall \mathit{ys} :: \hslist{a}~. \quad \mathit{rev}~\mathit{xs}~\mathit{ys} = \mathit{reverse}~xs \append \mathit{ys}
+\end{displaymath}
+Let us begin to simplify the expression:
+\begin{align*}
+\expr{\mathit{reverse}~(x:\mathit{xs}) \append \mathit{ys}}
+\hint{applying $\mathit{reverse}$}
+\expr{(\mathit{reverse}~\mathit{xs} \append \hslist{x}) \append \mathit{ys}}
+\hint{associativity of $\append$, proved for \textbf{Ex\ref{task:append-assoc}}}
+\expr{\mathit{reverse}~\mathit{xs} \append (\hslist{x} \append \mathit{ys})}
+\hint{applying $\append$}
+\expr{\mathit{reverse}~\mathit{xs} \append (x : (\hslist{} \append \mathit{ys}))}
+\hint{applying $\append$}
+\expr{\mathit{reverse}~\mathit{xs} \append (x : \mathit{ys})}
+\hint{induction hypothesis}
+\lastexpr{\mathit{rev}~\mathit{xs}~(x:\mathit{ys})}
+\end{align*}
+This expression cannot be simplified any further and does no longer contain references to $\mathit{reverse}$ or $\append$, so we use it as the RHS of the second equation of our definition for $\mathit{rev}$:
+\begin{minted}{haskell}
+rev :: [a] -> [a] -> [a]
+rev []     ys = ys
+rev (x:xs) ys = rev xs (x:ys)
+\end{minted} 
+This function is much more efficient than our old definition of $\mathit{reverse}$ and more general. We can restore the behaviour of $\mathit{reverse}$ by defining it in terms of $\mathit{rev}$ as follows:
+\begin{minted}{haskell}
+reverse :: [a] -> [a] 
+reverse xs = rev xs []
+\end{minted} 

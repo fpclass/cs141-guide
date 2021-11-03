@@ -1,0 +1,54 @@
+
+\setcounter{diagheight}{50}
+\begin{chart}
+	%\grid
+	\text 40,45:{Getting started}
+	\text 20,40:{Basic types}
+	\text 25,34:{Type classes}
+	\text 10,35:{Lists}
+	\text 10,30:{List\\comprehensions}
+	%\text 17,25:{Type aliases}
+	\text 40,40:{Functions}
+	\text 60,40:{Using the\\standard library}
+	\text 65,35:{Using other libraries}
+	\text 40,30:{Recursive functions}
+	\text 65,27:{Lazy evaluation}
+	\text 45,25:{Higher-order functions}
+	\text 35,20:{Data types}
+	\text 30,15:{Recursive types}
+	\text 10,15:{Kinds}
+	\text 10,5:{Type-level programming}
+	\text 30,10:{Proofs}
+	\text 70,17:{Foldables}
+	\text 55,15:{Functors}
+	\text 55,10:{Applicative functors}
+	\text 55,5:{Effectful programming}
+	\text 55,0:{Input \& output}
+	
+	\prereq 20,40,40,30:
+	\prereq 20,40,25,34:
+	\prereq 45,25,35,20:
+	\prereq 40,45,20,40:
+	\prereq 40,45,40,40:
+	\prereq 40,45,60,40:
+	\prereq 60,40,65,35:
+	\prereq 40,40,40,30:
+	\prereq 40,30,65,27:
+	\prereq 40,30,45,25:
+	% \prereq 40,25,70,17:
+	% \prereq 45,20,70,17:
+	\prereq 35,20,55,15:
+	\prereq 55,15,55,10:
+	\prereq 55,10,55,5:
+	\prereq 55,5,55,0:
+	\prereqc 25,34,35,20;-20:
+	\prereq 20,40,10,35:
+	\prereq 10,35,10,30:
+	%\prereqc 20,40,17,25;-40:
+	\prereq 35,20,70,17:
+	\prereq 35,20,30,15:
+	\prereq 30,15,30,10:
+	\prereq 30,15,10,15:
+	\prereq 10,15,10,5:
+\end{chart}
+

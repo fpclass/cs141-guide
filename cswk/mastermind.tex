@@ -1,0 +1,125 @@
+
+\section{Mastermind}
+
+The aim of this revision project is to implement the board game \emph{Mastermind} in Haskell with the help of some skeleton code. The game is played by exactly two players: a \emph{codemaker} and a \emph{codebreaker}. At the start of the game, the codemaker makes up a code consisting of four coloured pegs. Pegs are also referred to as symbols. For example:
+\begin{center}
+    Yellow, Green, Green, Blue
+\end{center}
+Each colour (symbol) may be used any number of times in the code, as long as the code has no more than four pegs. There are six colours to choose from. The code is \emph{not} disclosed to the codebreaker, whose objective it is to figure out what the code is. The codebreaker does this by repeatedly \emph{guessing} what the code might be. For example, to start the codebreaker might guess the following code at random:
+\begin{center}
+    Green, Red, Blue, Blue
+\end{center}
+The codemaker then scores the guess according to the following rules:
+\begin{itemize}
+    \item For each peg that is in the correct position and has the right colour, the codebreaker scores one coloured marker.
+    \item For each peg that is the right colour but in an incorrect position, the codebreaker scores one white marker.
+\end{itemize}
+For example, for the above guess, the codebreaker would score one white marker for the green peg that is in the wrong position and one coloured marker for the blue peg that is in the right position. The codebreaker does \emph{not} score a white marker for the second blue peg. In other words, at most one point is awarded for each peg in the code. The codebreaker then has to use this score to come up with a new guess for the code, which is then scored again, and so on. Once the codebreaker scores four coloured markers, the game is over and the two players switch roles.
+
+%-----------------------------------------------------------
+
+\subsection{Getting started}
+
+In order to get started with the revision project, you need to get hold of the skeleton code and ensure that it compiles successfully. 
+
+\subsubsection{Obtaining the skeleton code}
+
+To obtain the skeleton code, clone it from GitHub using the following command:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/mastermind
+\end{minted}
+You will be able to \bashIn{git commit} changes to your local copy of the repository, but you will not be able to \bashIn{git push} them. This is sufficient if you are only planning to work on the coursework from one place (\emph{e.g.} only the lab machines but not your personal computer).
+
+If you wish to fork the repository on GitHub and then clone your fork, feel free to do so.
+
+\subsubsection{Working with the skeleton code}
+
+You may wish to verify that the code compiles and that all tests fail by entering the \texttt{\small mastermind} directory that was created and running \bashIn{stack test}:
+\begin{minted}{text}
+$ cd mastermind
+$ stack test
+\end{minted}
+Running \mintinline{text}{stack test} will compile your code, run a bunch of unit tests on it, and give you a rough indication of how complete your solution is (the more tests pass, the more complete it is). Running \mintinline{text}{stack bench} will run a set of benchmarks on your code. You can also use \mintinline{text}{stack build} to just compile your code and then \mintinline{text}{stack exec mastermind} to run the program. Alternatively, you can run \mintinline{text}{stack repl} to load up the REPL, which is useful for debugging.
+
+The skeleton code contains a bunch of files, most of which you do not need to touch. The most important file is \texttt{\small src/Game.hs} which contains the definitions you will need to complete in order to implement the game. There are some definitions to get you started. Firstly, the number of pegs per code is defined as:
+\begin{minted}{haskell}
+pegs :: Int 
+pegs = 4
+\end{minted}
+Ideally, your solution should still work even if this number is modified. We represent colours using characters from \texttt{a} to \texttt{f} and refer to them as symbols:
+\begin{minted}{haskell}
+type Symbol = Char 
+
+symbols :: [Symbol]
+symbols = ['a'..'f']
+\end{minted}
+Again, your solution should continue to work even if you modify how many symbols there are and which characters are used to represent them. A code is a list of symbols:
+\begin{minted}{haskell}
+type Code = [Symbol]
+\end{minted}
+Codes are scored using coloured and white markers. We define scores to be pairs of integers where the first component of the pair represents the number of coloured markers and the second component represents the number of white markers:
+\begin{minted}{haskell}
+type Score = (Int, Int)
+\end{minted}
+A player is either human or a computer:
+\begin{minted}{haskell}
+data Player = Human | Computer
+\end{minted}
+The initial codemaker is defined as a constant:
+\begin{minted}{haskell}
+codemaker :: Player
+codemaker = Human
+\end{minted}
+You can change this value to determine who goes first. Finally, the computer's first guess is defined as:
+\begin{minted}{haskell}
+firstGuess :: Code 
+firstGuess = "aabb"
+\end{minted}
+You can change this value to change the computer's first guess, but note that values other than \haskellIn{"aabb"} may cause the computer to take more guesses to crack the code.
+
+%-----------------------------------------------------------
+
+\subsection{Five-guess algorithm}
+
+Donald Knuth described an algorithm for Mastermind which, for every code with four pegs, takes a computer no more than five guesses to solve. The algorithm works as follows:
+
+\begin{enumerate}
+    \item Let $S$ be a set of all possible codes (\haskellIn{"aaaa"}, \haskellIn{"aaab"}, $\ldots$, \haskellIn{"ffff"}).
+    \item Let the first guess be \haskellIn{"aabb"}.
+    \item Get the codemaker to score your guess.
+    \item If the score has four coloured markers, then the guess was correct.
+    \item Otherwise, remove all codes from $S$ which would result in a different score. In other words, we know that the code is somewhere in $S$, so it can only be one which results in the same score for the guess as the one we got from the codemaker. 
+    \item Find the next guess as follows. If there is only one code left in $S$, use it. Otherwise, for every possible code $c$ (not just those left in $S$):
+    \begin{enumerate}
+        \item For each possible score $s$ ($(0,1)$, $(0,2)$, $\ldots$, $(4,0)$):
+        \begin{enumerate}
+            \item Determine how many other codes would be eliminated from $S$. That is, if the next guess were $c$ and it would get a score of $s$, how many codes would that eliminate from $S$ -- i.e. how many codes with different scores would there be?
+        \end{enumerate}
+    \end{enumerate}
+    Choose the code which is guaranteed to eliminate the most options from $S$. This is calculated in the above step by calculating the minimum of eliminations for each code across all the possible scores it might get.
+    In the case of multiple codes producing the same number of guaranteed eliminations, a code which is still a member of $S$ should be picked over one which is not.
+    \item Go to Step 3.
+\end{enumerate}
+
+%-----------------------------------------------------------
+
+\subsection{Task}
+
+Complete all definitions in \texttt{\small src/Game.hs} so that the game works as described above and that the computer never takes more than five guesses to figure out a code. The following function stubs in \texttt{\small src/Game.hs}  need to be implemented:
+
+\begin{enumerate}
+	\item \haskellIn{correctGuess :: Score -> Bool}\\
+	This function should determine whether a \haskellIn{Score} value represents a winning guess -- \emph{i.e.} one where the number of coloured markers matches \haskellIn{pegs} and there are no white markers.
+	\item \haskellIn{validateCode :: Code -> Bool}\\
+	This function should determine whether a given \haskellIn{Code} value is valid: the code should contain \haskellIn{pegs}-many symbols and all the symbols should be elements of \haskellIn{symbols}.
+	\item \haskellIn{codes :: [Code]}\\
+	This list should contain all possible codes of length \haskellIn{pegs} using elements from \haskellIn{symbols}. There should be no duplicates.
+	\item \haskellIn{results :: [Score]}\\
+	This list should contains all possible scores for codes of length \haskellIn{pegs}. There should be no duplicates.
+	\item \haskellIn{score :: Code -> Code -> Score}\\
+	This function should score a code according to the rules described above. This function should be commutative, so that it does not matter whether the code or the guess is given as first argument and vice-versa.
+	\item \haskellIn{nextGuess :: [Code] -> Code} \\
+	This function should determine the next guess, given the current $S$ represented as a list of codes.
+	\item \haskellIn{eliminate :: Score -> Code -> [Code] -> [Code]}\\
+	This function should eliminate all codes from a given $S$, represented as a list of codes, with the help of the most recent guess (the \haskellIn{Code} argument) and the score which was obtained for it from the codemaker (the \haskellIn{Score} argument).
+\end{enumerate}

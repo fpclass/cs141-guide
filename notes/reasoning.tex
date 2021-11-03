@@ -1,0 +1,149 @@
+\section{Introduction to equational reasoning}
+\label{sec:lecture-10}
+
+\subsection{Natural numbers}
+
+Suppose that we define natural numbers as previously shown in the lecture on algebraic data types. That is, a natural number is either zero, represented by the $Z$ constructor, or the successor to some other natural number, represented by the $S$ constructor which takes a natural number as argument:
+\begin{displaymath}
+\mathbf{data}~\mathit{Nat} = Z \mid S~\mathit{Nat}
+\end{displaymath}
+We can then define addition as a recursive function:
+\begin{displaymath}
+\begin{array}{lllcl}
+\multicolumn{5}{l}{\mathit{add} :: \mathit{Nat} \to \mathit{Nat} \to \mathit{Nat}} \\
+\mathit{add} & Z & m & = & m \\
+\mathit{add} & (S~n) & m & = & S~(\mathit{add}~n~m)
+\end{array}
+\end{displaymath}
+
+\paragraph{Left identity}
+
+There are some well-known properties of addition. For example, addition has a left unit or identity: adding zero to some number $m$ should just return $m$:
+\begin{displaymath}
+\forall m :: \mathit{Nat} ~.\quad \mathit{add}~Z~m = m
+\end{displaymath}
+The proof for this equality is trivial, since it is an exact match of one of the equations which define $\mathit{add}$. We write down this proof as follows:
+\begin{align*}
+\expr{\mathit{add}~Z~m}
+\hint{applying $\mathit{add}$}
+\lastexpr{m}
+\end{align*}
+In this case, we started with the left-hand side of the equation and justified that we can just rewrite it to the right-hand side by the definition of $\mathit{add}$. We will continue to use this format for all of our future proofs.
+
+\paragraph{Right identity} Similarly to the first property, adding some natural number $n$ to zero should also be equivalent to just $n$:
+\begin{displaymath}
+\forall n :: \mathit{Nat} ~.\quad \mathit{add}~n~Z = n
+\end{displaymath}
+However, this time we cannot just use the definition of $\mathit{add}$ to rewrite one side of the equation to the other, because the result of $\mathit{add}$ depends on what the first argument is. Since we do not know what $n$ is, we must explore all possible options through induction on $n$. In the base case, where $n = Z$, we can show that $\mathit{add}~Z~Z$ is equivalent to $Z$ just by rewriting one side of the equation again:
+\begin{align*}
+\expr{\mathit{add}~Z~Z}
+\hint{applying $\mathit{add}$}
+\lastexpr{Z}
+\end{align*}
+We can now assume that $\mathit{add}~n~Z = n$ holds for $n :: \mathit{Nat}$ to show that the inductive step for $S~n$ also holds:
+\begin{align*}
+\expr{\mathit{add}~(S~n)~Z}
+\hint{applying $\mathit{add}$}
+\expr{S~(\mathit{add}~n~Z)}
+\hint{induction hypothesis}
+\lastexpr{S~n}
+\end{align*}
+This concludes the proof for the second property. 
+
+\paragraph{Associativity} Let's consider a third property of addition: associativity. We can express the associativity property of $\mathit{add}$ as:
+\begin{displaymath}
+\forall x~y~z :: \mathit{Nat}~.\quad \mathit{add}~x~(\mathit{add~y~z}) = \mathit{add}~(\mathit{add}~x~y)~z
+\end{displaymath}
+We will approach the proof for associativity by induction on $x$ because we cannot reduce any part of the equality as it stands. As usual with induction on natural numbers, we start with the base case where $x = Z$. With proofs for equality, we can start from either side of the equation. We arbitrarily choose to start with the left-hand side as with the previous two proofs:
+\begin{align*}
+\expr{\mathit{add}~Z~(\mathit{add~y~z})}
+\hint{applying $\mathit{add}$}
+\lastexpr{\mathit{add~y~z}}
+\end{align*}
+Now we are a little stuck as there is no obvious way for us to progress to our goal of $\mathit{add}~(\mathit{add}~Z~y)~z$. In situations like this, it helps to look at the other side of the equation and begin from there:
+\begin{align*}
+\expr{\mathit{add}~(\mathit{add}~Z~y)~z}
+\hint{applying $\mathit{add}$}
+\lastexpr{\mathit{add~y~z}}
+\end{align*}
+We have now ended up with $\mathit{add~y~z}$ by reducing both sides of the equation. We can therefore conclude that the equality holds for $x = Z$ since we showed that both sides can be reduced to the same expression. We could also write this proof as a single series of transformations from one side of the equation to the other:
+\begin{align*}
+\expr{\mathit{add}~Z~(\mathit{add~y~z})}
+\hint{applying $\mathit{add}$}
+\expr{\mathit{add~y~z}}
+\hint{unapplying $\mathit{add}$}
+\lastexpr{\mathit{add}~(\mathit{add}~Z~y)~z}
+\end{align*}
+Here, ``unapplying'' means the inverse of ``applying'': taking the right-hand side of a function definition and replacing it with the corresponding left-hand side. We can now assume that $\mathit{add}~x~(\mathit{add~y~z}) = \mathit{add}~(\mathit{add}~x~y)~z$ holds for $x :: Nat$, $y :: Nat$, and $z :: Nat$ to prove the inductive step for $S~x$:
+\begin{align*}
+\expr{\mathit{add}~(S~x)~(\mathit{add~y~z})}
+\hint{applying $\mathit{add}$}
+\expr{S~(\mathit{add}~x~(\mathit{add}~y~z))}
+\hint{induction hypothesis}
+\expr{S~(\mathit{add}~(\mathit{add}~x~y)~z)}
+\hint{unapplying $\mathit{add}$}
+\expr{(\mathit{add}~(S~\mathit{add}~x~y)~z)}
+\hint{unapplying $\mathit{add}$}
+\lastexpr{(\mathit{add}~(\mathit{add}~(S~x)~y)~z)}
+\end{align*}
+This concludes the proof for associativity.
+
+\subsection{Understanding structural induction}
+
+While you may already be familiar with induction on natural numbers, you may not know that you can perform induction on values of any set which can be defined \emph{inductively}. For example, we could define $\mathbb{N}$ inductively as follows:
+\begin{itemize}
+\item $Z \in \mathbb{N}$
+\item $\forall n \in \mathbb{N}. \mathit{S}~n \in \mathbb{N}$
+\end{itemize}
+The case for $Z$ is a base case because it does not rely on any other elements of $\mathbb{N}$ for its definition. The case for $S~n$ is a recursive case, because it is defined in terms of some other element of $\mathbb{N}$ called $n$.
+This inductive definition is equivalent to our data type declaration of natural numbers in Haskell:
+\begin{displaymath}
+\mathbf{data}~\mathit{Nat} = Z \mid S~\mathit{Nat}
+\end{displaymath}
+Induction is always performed on a universally-quantified variable in a theorem by breaking the theorem down into several smaller theorems, one for each case that defines the set of values over which the variable ranges.
+
+\subsection{Induction on lists}
+
+As shown above, natural numbers can be defined inductively in a way which closely resembles the corresponding algebraic data type in Haskell. 
+
+Lists in Haskell are also defined as an algebraic data type and they can also be defined inductively as:
+\begin{itemize}
+\item $\hslist{} :: \hslist{a}$
+\item $\forall x :: a. \forall \mathit{xs} :: \hslist{a}.x:\mathit{xs} :: \hslist{a}$
+\end{itemize}
+An algebraic data type for lists could be expressed in Haskell as:
+\begin{displaymath}
+\mathbf{data}~\mathit{List}~a = \mathit{Empty} \mid \mathit{Cons}~a~(\mathit{List}~a)
+\end{displaymath}
+Note that Haskell's built-in list type is just an algebraic data type as well which is defined exactly like the $\mathit{List}$ type above, except with different names for the type and two constructors.
+\paragraph{Map fusion} In Haskell, it is common to define functions as the composition of several, smaller functions. However, if executed literally, such functions are obviously very inefficient because each function would generate intermediate results which are then immediately consumed by the next function in the chain. The Haskell compiler performs an optimisation known as \emph{fusion} which turns multiple loops over \emph{e.g.} a list into one and eliminates intermediate lists. For example, mapping a function $g$ over a list and then mapping a function $f$ over the resulting list is the same as composing $f$ and $g$ and mapping the resulting function over the list:
+\begin{displaymath}
+\forall f :: b \to c, g :: a \to b, \mathit{xs} :: \hslist{a}~.\quad \mathit{map}~f~(\mathit{map}~g~\mathit{xs}) = \mathit{map}~(f \circ g)~\mathit{xs}
+\end{displaymath}
+Because functions in Haskell are pure, we can prove that this is a valid way to optimise our programs. Our proof is by induction on $\mathit{xs}$. There is only one base case, which is for the empty list $\hslist{}$:
+\begin{align*}
+\expr{\mathit{map}~f~(\mathit{map}~g~\hslist{})}
+\hint{applying $\mathit{map}$}
+\expr{\mathit{map}~f~\hslist{}}
+\hint{applying $\mathit{map}$}
+\expr{\hslist{}}
+\hint{unapplying $\mathit{map}$}
+\lastexpr{\mathit{map}~(f \circ g)~\hslist{}}
+\end{align*}
+Just as with natural numbers, we can perform a proof just by rewriting either side of the equation until both sides are the same expression. 
+
+We can now assume that $\mathit{map}~f~(\mathit{map}~g~\mathit{xs}) = \mathit{map}~(f \circ g)~\mathit{xs}$ holds (our induction hypothesis) to prove the inductive step for $x : xs$:
+\begin{align*}
+\expr{\mathit{map}~f~(\mathit{map}~g~(x:\mathit{xs}))}
+\hint{applying $\mathit{map}$}
+\expr{\mathit{map}~f~(g~x : \mathit{map}~g~\mathit{xs})}
+\hint{applying $\mathit{map}$}
+\expr{f~(g~x) : \mathit{map}~f~(\mathit{map}~g~\mathit{xs})}
+\hint{induction hypothesis}
+\expr{f~(g~x) : \mathit{map}~(f \circ g)~\mathit{xs}}
+\hint{unapplying $\circ$}
+\expr{(f \circ g)~x : \mathit{map}~(f \circ g)~\mathit{xs}}
+\hint{unapplying $\mathit{map}$}
+\lastexpr{\mathit{map}~(f \circ g)~(x : \mathit{xs})}
+\end{align*}
+This concludes the proof.

@@ -1,0 +1,276 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LaTeX sources for The Guide to Functional Programming
+%% Michael B. Gale (michael@fpclass.online)
+%%
+%% This work is licensed under the Creative Commons
+%% Attribution-NonCommercial-NoDerivatives 4.0 International License. To
+%% view a copy of this license, visit
+%% http://creativecommons.org/licenses/by-nc-nd/4.0/ or send a letter to
+%% Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,a4paper,twoside,fleqn]{report}
+
+\usepackage{geometry}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fancyeq}
+\usepackage{fancyhdr}
+\usepackage[explicit]{titlesec}
+\usepackage{color}
+\usepackage{longtable}
+\usepackage{array, booktabs}
+\usepackage{colortbl}
+\usepackage{wrapfig}
+\usepackage{pgfplots}
+\usepackage[strict]{changepage}
+\usepackage{graphbox}
+\usepackage{prerex}
+\usepackage{forest}
+\usepackage{multicol}
+\usepackage{fontawesome}
+\usepackage{natbib}
+\usepackage{ccicons}
+
+% Minted -------------------------------
+
+\usepackage{minted}
+\usepackage[
+backgroundcolor = gray!5
+, hidealllines=true
+]{mdframed}
+
+\surroundwithmdframed{minted}
+\usemintedstyle{lovelace}
+
+\setminted[text]{fontsize=\small}
+\setminted[haskell]{fontsize=\small}
+\setminted[bash]{fontsize=\small}
+\newcommand{\haskellIn}[1]{\mintinline[fontsize=\small]{haskell}{#1}}
+\newcommand{\bashIn}[1]{\mintinline[fontsize=\small]{bash}{#1}}
+
+% Tikz -------------------------------
+
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+\tikzset{
+	treenode/.style = {align=center, inner sep=0pt, text centered,
+		font=\sffamily},
+	arn_n/.style = {treenode, circle, white, font=\sffamily\bfseries, draw=black,
+		fill=black, text width=1.5em},
+	arn_r/.style = {treenode, circle, red, draw=red,
+		text width=1.5em, very thick},
+	arn_x/.style = {treenode, circle, draw=white,
+		minimum width=1.5em, minimum height=1.5em},
+	cls/.style = { treenode, rectangle, red, draw=red,
+		text width=1.5em, very thick, minimum width=1.5em, minimum height=1.5em }
+}
+
+% UK English -------------------------------
+\usepackage[UKenglish]{babel}
+\usepackage[UKenglish]{isodate}
+
+% Hyperref -------------------------------
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    citecolor=black,
+    unicode=false
+}
+
+% cleveref
+\usepackage[nameinlink]{cleveref}
+
+\crefname{figure}{figure}{figures} % cleveref by default has `fig.'
+\Crefname{figure}{Figure}{Figures}
+
+\crefname{section}{section}{sections} % cleveref by default has `fig.'
+\Crefname{section}{Section}{Sections}
+
+% Fonts -------------------------------
+\usepackage[]{FiraSans}
+
+% Palatino (font)
+\usepackage{mathpazo}
+\linespread{1.05}         % Palatino needs more leading (space between lines)
+\usepackage[T1]{fontenc}
+
+% some format settings
+% for hard-bound final submission, use:
+%\setlength{\oddsidemargin}{4.6mm}     % 30 mm left margin - 1 in
+% for soft-bound version and techreport, use instead:
+\setlength{\oddsidemargin}{-0.4mm}    % 25 mm left margin - 1 in
+\setlength{\evensidemargin}{-0.4mm}
+\setlength{\topmargin}{-5.4mm}        % 20 mm top margin - 1 in
+\setlength{\textwidth}{160mm}         % 20/25 mm right margin
+\setlength{\textheight}{237mm}        % 20 mm bottom margin
+\setlength{\headheight}{5mm}
+\setlength{\headsep}{5mm}
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{\medskipamount}
+\renewcommand\baselinestretch{1.2} % thesis format (not needed for techreport)
+% don't let large figures hijack entire pages
+\renewcommand\topfraction{.9}
+\renewcommand\textfraction{.1}
+\renewcommand\floatpagefraction{.8}
+
+\usepackage[nomap]{FiraMono}
+
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = tt* }
+
+\author{Michael B. Gale}
+
+
+\definecolor{gray75}{gray}{0.75}
+\newcommand{\hsp}{\hspace{20pt}}
+
+\titleformat{name=\chapter}[hang]{}{}{0cm}{%
+	\protect\thispagestyle{fancy}
+	\begin{center}
+		\large $\lambda$.\thechapter \\
+		\huge \textsc{#1}
+	\end{center}
+	%\chaptermark{\chapter}
+}
+\titleformat{name=\chapter,numberless}[hang]{}{}{0cm}{%
+	\begin{center}
+		\huge \textsc{#1}
+	\end{center}
+	%\chaptermark{\chapter}
+}
+
+%\titleformat{\subsection}{format}{label}{0em}{before-code}
+
+\titleformat{\section}
+	{\bfseries\large}
+	{\llap{\parbox{1.5cm}{\thesection\hfill}}#1}
+	{0em}
+	{\bfseries}
+
+\titleformat{\subsection}
+{\bfseries}{\llap{\parbox{1.5cm}{\thesubsection\hfill}}#1}{0em}{\bfseries}
+
+
+% misc. commands
+\newcounter{TaskCounter}
+
+\newcommand{\question}[1]{\vspace{-0.7cm}{\footnotesize \emph{#1}} \vspace{0.25cm}}
+\newcommand{\topics}[1]{\vspace{-0.5cm}{\footnotesize \emph{Topics}: #1} \vspace{0.25cm}}
+\newcommand{\task}[2][]{\indent\llap{\parbox{1.5cm}{\refstepcounter{TaskCounter}\label{#1}{\firamedium Ex\theTaskCounter}\hfill}}#2}
+\newcommand{\solution}[2]{\indent\llap{\parbox{1.5cm}{\textbf{Ex#1}\hfill}}#2}
+\newcommand{\taskLine}{\bigskip\hrule\bigskip}
+
+
+
+% titles, dates, etc. of lectures and labs
+\input{topics.tex}
+
+\AtBeginDocument{\addtocontents{toc}{\protect\thispagestyle{fancy}}}
+
+\begin{document}
+\fancypagestyle{empty}{\fancyhf{}}
+\pagestyle{empty}
+\pagenumbering{roman} 
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\input{titlepage.tex}
+
+\cleardoublepage
+%\setcounter{page}{1}
+
+\fancyhf{}
+\fancyhead[LE, RO]{\emph{The Guide to Functional Programming}}
+\fancyhead[LO, RE]{\emph{Michael B. Gale}}
+%\fancyhead[RE,LO]{Guides and tutorials}
+%\fancyfoot[CE,CO]{\leftmark}
+\fancyfoot[LE,RO]{\thepage}
+\pagestyle{fancy}
+\thispagestyle{fancy}
+\newgeometry{
+	tmargin=2.5cm,
+	textwidth=155mm, 
+	textheight=247mm,
+	headheight=5mm,
+	headsep=5mm,
+	inner=30mm
+}
+
+\tableofcontents
+
+
+\cleardoublepage
+\pagenumbering{arabic}
+
+\input{overview.tex}
+\input{books.tex}
+\input{timeline.tex}
+\input{coursework.tex}
+\input{exam.tex}
+\input{guidance.tex}
+\input{lecture-notes.tex}
+
+\cleardoublepage
+\chapter{Exercises}
+
+This chapter contains exercises for the module. Each section in this chapter corresponds to one topic from the lectures. You can find recommendations for which sets of exercises to complete after a given lecture on the module website and recommendations for each week of term in \Cref{sec:timeline}. We strongly recommend that you try to keep up with the exercises as they are very valuable for the coursework. If you are not following the order in which the exercises are presented in this guide, the graph below shows prerequisite dependencies between topics in the module:
+
+\input{labs/dependencies.tex}
+
+CS141 lab sessions should primarily be fun! Make use of them to practice the skills we cover in the lectures and to ask us questions. We do take a register to keep track of attendance, but if you should miss a lab \emph{e.g.} due to illness, that's not an issue and you are welcome to attend an online lab at a later time instead.
+
+\input{labs/lab-getting-started.tex} \newpage
+\input{labs/lab-functions.tex} \newpage
+\input{labs/lab-basic-types.tex} \newpage
+\input{labs/lab-prelude.tex} \newpage
+\input{labs/lab-lists.tex} \newpage
+\input{labs/lab-type-classes.tex} \newpage
+\input{labs/lab-list-comprehensions.tex} \newpage
+\input{labs/lab-recursive-functions.tex} \newpage
+\input{labs/lab-higher-order-functions.tex} \newpage
+\input{labs/lab-dependencies.tex} \newpage
+\input{labs/lab-data-types.tex} \newpage
+\input{labs/lab-recursive-types.tex} \newpage
+\input{labs/lab-lazy-evaluation.tex} \newpage
+\input{labs/lab-equational-reasoning.tex} \newpage
+\input{labs/lab-foldable.tex} \newpage
+\input{labs/lab-functors.tex} \newpage
+\input{labs/lab-applicatives.tex} \newpage
+\input{labs/lab-effectful-programming.tex} \newpage
+\input{labs/lab-io.tex} \newpage
+\input{labs/lab-kinds.tex} \newpage  
+\input{labs/lab-tlp.tex}  
+
+\input{cswk/lac.tex}
+\input{cswk/scratch-clone.tex}
+\input{cswk/revision-projects.tex}
+
+\cleardoublepage
+\chapter{Solutions}
+
+This section contains model answers for selected exercises along with descriptions of how they could be derived. You should only read these for revision purposes or once you have completed the exercises yourself. Remember that it is better for you to ask for help in figuring something out than to just jump to the solutions.
+
+\input{labs/sol-recursive-functions.tex}
+\input{labs/sol-equational-reasoning.tex}
+\input{labs/sol-functors.tex}
+
+\input{prelude.tex}
+
+\pagestyle{fancy}
+\thispagestyle{fancy}
+\phantomsection 
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{kbib}
+\bibliography{cs141}
+\pagestyle{fancy}
+\thispagestyle{fancy}
+
+\end{document}

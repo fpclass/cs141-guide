@@ -1,0 +1,40 @@
+\section{Recursive functions}
+\topics{Recursive functions.}
+
+These exercises are about recursive functions in Haskell. You can obtain the skeleton code by cloning the repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-recursive-functions
+\end{minted}
+In a nutshell, recursive functions are functions which are defined in terms of themselves. They are used extensively in functional programming to repeatedly perform computations based on the arguments given to them. Most of the functions you will write in Haskell will be recursive.  
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 5 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 6 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine
+
+\task[task:elem-explicit]{Using explicit recursion, complete the definition of 
+	
+\haskellIn{elem :: Eq a => a -> [a] -> Bool}
+
+which should determine whether some value of type \texttt{\small a} is contained in a list of values of type \texttt{\small a}. For example, \haskellIn{elem 4 [4,8,15,4]} should evaluate to \haskellIn{True} and \haskellIn{elem 7 [4,8,15,4]} should evaluate to \haskellIn{False}.}
+
+\task{Using explicit recursion, complete the definition of}
+
+\haskellIn{maximum :: Ord a => [a] -> a}
+
+which should find the greatest element of the list given as argument. For example, \haskellIn{maximum [1,2,3,2,1]} should evaluate to \haskellIn{3}. You may assume that \haskellIn{maximum} will never be called with the empty list so you do not need to define an equation for that case.
+
+\task{Complete the definition of
+	
+\haskellIn{intersperse :: a -> [a] -> [a]}
+
+which should separate elements of a list with some separator of the same type as the elements of the list. For example, \haskellIn{intersperse '|' "CAKE"} should evaluate to \haskellIn{"C|A|K|E"}.
+
+\emph{Hint}: you may find it useful to define an additional function to help you.
+}
+
+\task{Complete the definition of
+	
+\haskellIn{subsequences :: [a] -> [[a]]}
+
+which should find all possible subsequences of the argument. For example, evaluating \haskellIn{subsequences "abc"} should result in a list such as \linebreak \haskellIn{["", "a", "b", "c", "ab", "bc", "ac", "abc"]}. The order of the elements in the resulting list does not matter.
+} 

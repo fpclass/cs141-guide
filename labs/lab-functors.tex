@@ -1,0 +1,151 @@
+\section{Functors}
+\topics{Functors.}
+
+These exercises are about functors. We introduce you to a range of different types that are functors, in addition to those that you have seen in the lectures. Many of the types you will work with in these exercises may seem outright silly at this point. However, we will continue to work with them in the coming weeks and you will see how they become increasingly more useful as we get to know more and more abstractions. As usual, you can obtain the skeleton code by cloning the respective repository from GitHub with the following command:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-functors
+\end{minted}
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 11 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 12.1 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine
+
+\task{We start off with one of the simplest types that is a functor: the \texttt{\small Identity} type. This type is defined as follows:}
+\begin{minted}{haskell}
+data Identity a = Identity a
+\end{minted}
+This may seem like quite a silly type to define -- what is it good for? We will find out later. For now, define an instance of \haskellIn{Functor} for it. Once defined, using \haskellIn{fmap} will have the same effect as just applying a function directly to the value that we put inside of \haskellIn{Identity}:
+\begin{minted}{haskell}
+fmap (+2) (Identity 4)              ==> Identity 6
+fmap length (Identity "Witter")     ==> Identity 6
+fmap ($ "cake") (Identity length)   ==> Identity 4
+fmap (map (=='o')) (Identity "foo") 
+==> Identity [False,True,True]
+\end{minted} 
+
+\task[task:identity-functor]{Once you have implemented \haskellIn{fmap}, you may wish to verify that your instance of \haskellIn{Functor} for \texttt{\small Identity} obeys the functor laws. Running the tests with \bashIn{stack test} will give you some indication, but you could also do it formally with some proofs by induction for the two functor laws.}
+
+\taskLine 
+
+\task{Another type that looks just as silly is the \texttt{\small Const} type which can be defined as:}
+\begin{minted}{haskell}
+data Const v a = Const v
+\end{minted}
+This type is also a functor. Complete the \haskellIn{Functor} instance for it. Once implemented, you can test it's behaviour (or rather lack thereof):
+\begin{minted}{haskell}
+fmap (+2) (Const 4)              ==> Const 4
+fmap length (Const "Witter")     ==> Const "Witter"
+fmap (map (=='o')) (Const "foo") ==> Const "foo"
+\end{minted} 
+As we can see, the ``effect'' of this functor is that it always preserves the values stored inside of it and the function we apply with \haskellIn{fmap} does nothing. 
+
+\task[task:const-functor]{You may again wish to convince yourself that your implementation of \haskellIn{fmap} for this type obeys the functor laws.}
+
+\taskLine 
+
+\task{You are given a definition for a type \texttt{\small Point} that can be used to represent points in two-dimensional space as well as other pairs of values of the same type:   }
+\begin{minted}{haskell}
+data Point a = Point a a
+\end{minted}
+For example, some values of this type are:
+\begin{minted}{haskell}
+p1 :: Point Int
+p1 = Point 4 5
+
+p2 :: Point Double
+p2 = Point 2.3 4.2 
+
+p3 :: Point String
+p3 = Point "hello" "world" 
+\end{minted}
+The \texttt{\small Point} type is a functor. Complete the \haskellIn{Functor} instance for it. Some examples of what you should be able to do with the \haskellIn{Functor} instance for \texttt{\small Point} are:
+\begin{minted}{haskell}
+fmap (+1) p1   ==> Point 5 6 
+fmap (+1) p2   ==> Point 3.3 5.2 
+fmap show p2   ==> Point "2.3" "4.2"
+fmap length p3 ==> Point 5 5
+\end{minted}
+As you can see, having \haskellIn{fmap} available for a type allows us to perform quite the range of operations on values of the \texttt{\small Point} type.
+
+\task[task:point-functor]{You may once again wish to verify that your instance of \haskellIn{Functor} for \texttt{\small Point} obeys the functor laws.}
+
+\taskLine \pagebreak
+
+\task{Consider the following definition of \emph{rose trees}:}
+\begin{minted}{haskell}
+data RoseTree a = Leaf a | Node [RoseTree a]
+\end{minted}
+In a rose tree, every node can have zero or more children. This type is also a functor. Complete the instance of \haskellIn{Functor} for \texttt{\small RoseTree}. Below are some examples of what is possible with \haskellIn{fmap} for \texttt{\small RoseTree}:
+
+\begin{minted}{haskell}
+fmap (+5) (Leaf 4)                ==> Leaf 9 
+fmap (+5) (Node [])               ==> Node []
+fmap (+5) (Node [Leaf 4, Leaf 8]) ==> Node [Leaf 9, Leaf 13]
+fmap length (Node [Node [], Node [Leaf "duck"]])
+==> Node [Node [], Node [Leaf 4]]
+fmap sum (Node [Node [Leaf [1,2,3]], Node [Leaf [9,8,7]]])
+==> Node [Node [Leaf 6], Node [Leaf 24]]
+\end{minted}
+
+\taskLine 
+
+\task{A property of functors is that, given any two functors, they can be composed to form a new functor which combines both. This is useful if, for example, we want to exploit the fact that lists are functors to work more easily with nested lists. To begin, let us define a suitable type to represent a data structure where values of type \texttt{\small g a} are nested inside containers of type \texttt{\small f}:}
+\begin{minted}{haskell}
+data Compose f g a = Compose (f (g a))
+\end{minted}
+What is the type of the \haskellIn{Compose} constructor?
+
+\task{The \haskellIn{Compose} type is a functor. Complete the respective instance of \haskellIn{Functor}. Once implemented, you can very easily apply \haskellIn{fmap} to arbitrarily nested data structures:} 
+\begin{minted}{haskell}
+fmap (+5) (Compose [[1,2,3], [4,5,6]]) 
+==> Compose [[6,7,8], [9,10,11]]
+fmap not (Compose [Just True, Just False, Nothing])
+==> Compose [Just False, Just True, Nothing]
+fmap even (Compose (Node [Leaf [1,2,3]]))
+==> Compose (Node [Leaf [False, True, False]])
+fmap (+5) (Compose (Compose [[[1,2],[3]], [[4],[5,6]]]))
+==> Compose (Compose [[[6,7],[8]],[[9],[10,11]]])
+\end{minted}
+
+\task[task:compose-functor]{Proving that \haskellIn{fmap} for \texttt{\small Compose} obeys the functor laws is significantly more interesting than for the previous types. Can you do it? \emph{Hint}: you need to assume that the two underlying functors obey the laws and make use of them.}
+
+\taskLine \pagebreak
+
+Consider the following definition of a data type in Haskell:
+\begin{minted}{haskell}
+data State s a = St (s -> (a,s))
+\end{minted}
+This type, which we have named \texttt{\small State}, has two type parameters \texttt{\small s} and \texttt{\small a}. It has a single data constructor, named \haskellIn{St}, which has a single parameter of type \texttt{\small s -> (a,s)}. Therefore, the type of \haskellIn{St} is \texttt{\small (s -> (a,s)) -> State s a}. In other words, given a function of type \texttt{\small s -> (a,s)}, the \haskellIn{St} constructor produces a value of type \texttt{\small State s a}. Our intuition for this type is going to be that \haskellIn{St} is a wrapper around ``stateful'' functions: that is, functions which require some initial state (of some type \texttt{\small s}) as argument and return a pair consisting of a result (of some type \texttt{\small a}) and a potentially new state (of the same type \texttt{\small s} as the initial state). For example, we could define the following value of \texttt{\small State Int Int}:
+\begin{minted}{haskell}
+fresh :: State Int Int 
+fresh = St (\s -> (s, s+1))
+\end{minted}
+Let us also define a little helper function that is useful to have when working with the \texttt{\small State} type, which extracts the function \texttt{\small m} of type \texttt{\small s -> (a,s)} from a value of type \texttt{\small State s a} and applies it to some initial state \texttt{\small s} of type \texttt{\small s}:
+\begin{minted}{haskell}
+runState :: State s a -> s -> (a, s)
+runState (St m) s = m s
+\end{minted}
+Using both of these definitions, we can then get some results:
+\begin{minted}{haskell}
+runState fresh 4                                   ==> (4,5)
+runState fresh 7                                   ==> (7,8)
+let (x,s') = runState fresh 7 in runState fresh s' ==> (8,9)
+\end{minted}
+While this is currently not overly interesting and rather clunky, these definitions will provide the foundations for much more exciting things that are yet to come...
+
+\task{Meanwhile, back to the grind: the \texttt{\small State} type is a functor. Complete the definition of \haskellIn{fmap} for it. Some examples of it in action:}
+\begin{minted}{haskell}
+runState (fmap (*2) fresh) 4 ==> (8,5) 
+runState (fmap show fresh) 7 ==> ("7",8)
+\end{minted}
+\emph{Hint}: implementing \haskellIn{fmap} for \texttt{\small State} is mostly a game with types. If you are unsure of what to write, place a typed hole \haskellIn{_} in the place where you do not know what expression to use and the Haskell compiler will tell you what the type of the expression should be, what variables are in scope and what their types are.
+
+\taskLine 
+
+\task{We know that, in Haskell, functions have types of the form \texttt{\small a -> b} where \texttt{\small a} is the domain of the function (\emph{i.e.} the type of arguments that the function accepts) and \texttt{\small b} is the co-domain (\emph{i.e.} the type of values the function produces). In Haskell, type constructors can be partially applied just like functions. For example, \texttt{\small (->) a}, is the function type constructor \texttt{\small (->)} applied to only one argument \texttt{\small a}. Of course there are no values of this type, so why is this useful? Well, it turns out that this type is a functor! Can you complete the definition of \haskellIn{Functor} for it and figure out what \haskellIn{fmap} does for this type? }
+\begin{minted}{haskell}
+instance Functor ((->) r) where 
+    -- fmap :: (a -> b) -> (r -> a) -> (r -> b)
+    fmap = undefined
+\end{minted}
+\emph{Hint}: this is very easy if you recognise the type of \haskellIn{fmap} where \texttt{\small f} is replaced by \texttt{\small(->) r} (shown in the comment above) from somewhere...

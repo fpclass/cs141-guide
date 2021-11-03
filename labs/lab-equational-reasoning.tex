@@ -1,0 +1,126 @@
+\section{Equational reasoning}
+\topics{Equational reasoning, constructive induction.}
+
+Haskell is a purely functional programming language, which allows us to easily prove formal properties about our functions. This is nice because it means we do not have to rely on testing (which is not exhaustive) and can instead use structural induction to exhaustively cover all possible inputs to a function. The approach to proving properties we use for Haskell programs is called \emph{equational reasoning} -- this approach works by starting with an equation and rewriting both sides of it until they are the same. 
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapters 16 and 17 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\makebox[0.5cm]{\faLightbulbO}~If you are looking for more exercises, have a look at the past exam papers -- Question 4 on each paper has more theorems to prove.
+
+\subsubsection{Induction on natural numbers}
+
+Recall that we have already proved the following (monoidal) properties about natural numbers in the lecture on equational reasoning (\Cref{sec:lecture-10}):
+\begin{displaymath}
+\begin{array}{lcrcl}
+\textbf{Left unit} &\qquad & \mathit{add}~Z~x & = & x \\
+\textbf{Right unit} &\qquad & \mathit{add}~x~Z & = & x \\
+\textbf{Associativity} & \qquad & \mathit{add}~x~(\mathit{add}~y~z) & = & \mathit{add}~(\mathit{add}~x~y)~z 
+\end{array}
+\end{displaymath}
+
+Also recall the definition of \haskellIn{add} from \Cref{sec:lecture-10}:
+\begin{displaymath}
+\begin{array}{lllcl}
+\multicolumn{5}{l}{\mathit{add} :: \mathit{Nat} \to \mathit{Nat} \to \mathit{Nat}} \\
+\mathit{add} & Z & m & = & m \\
+\mathit{add} & (S~n) & m & = & S~(\mathit{add}~n~m)
+\end{array}
+\end{displaymath}
+
+\taskLine
+
+\task[task:succ-comm]{Prove the following property about addition just by rewriting one side of the equation until you end up with the other side:
+	\begin{displaymath}
+	\forall n :: \mathit{Nat} . \quad  S~n = \mathit{add}~(S~Z)~n
+	\end{displaymath}
+	You should show each step of the proof along with a comment to say what you have done at that particular step, as shown in the lecture and the proofs in \Cref{sec:lecture-10}.
+}
+
+\task[task:successor-commutes]{Prove the following property about addition by induction on $n$. For this proof, you will need to make use of some of the other properties you know about $\mathit{add}$, including the one you proved for Exercise \ref{task:succ-comm}.
+	\begin{displaymath}
+	\forall n~m :: \mathit{Nat} . \quad  \mathit{add}~(S~n)~m = \mathit{add}~n~(S~m)
+	\end{displaymath}
+}
+
+\task[task:add-commutes]{Finally, using all the properties you know about $\mathit{add}$ so far, prove that $\mathit{add}$ commutes:
+	\begin{displaymath}
+	\forall n~m :: \mathit{Nat} . \quad  \mathit{add}~n~m = \mathit{add}~m~n
+	\end{displaymath}
+}
+
+\taskLine
+
+\subsubsection{Induction on lists}
+
+In Haskell, the \haskellIn{reverse} function can be defined as follows:
+\begin{minted}{haskell}
+reverse :: [a] -> [a]
+reverse []     = []
+reverse (x:xs) = reverse xs ++ [x]
+\end{minted}
+This makes use of the \haskellIn{(++)} operator, which is defined as follows:
+\begin{minted}{haskell}
+(++) :: [a] -> [a] -> [a]
+[]     ++ ys = ys 
+(x:xs) ++ ys = x : (xs ++ ys)
+\end{minted}
+
+\taskLine
+
+\task[task:reverse-identity-left]{Prove that $(\append)$ has a left identity by rewriting the following equation:
+	\begin{displaymath}
+	\forall \mathit{xs} :: \hslist{a}~. \quad \hslist{} \append \mathit{xs} = \mathit{xs}
+	\end{displaymath}}
+
+\task[task:reverse-identity-right]{Prove that $(\append)$ has a right identity by induction on $\mathit{xs}$:
+	\begin{displaymath}
+	\forall \mathit{xs} :: \hslist{a}~. \quad \mathit{xs} \append \hslist{} = \mathit{xs}
+	\end{displaymath}}
+
+\task[task:append-assoc]{Prove that $(\append)$ is associative by induction on $\mathit{xs}$:
+	\begin{displaymath}
+	\forall \mathit{xs}~\mathit{ys}~\mathit{zs} :: \hslist{a}~. \quad \mathit{xs} \append (\mathit{ys} \append \mathit{zs}) = (\mathit{xs} \append \mathit{ys}) \append \mathit{zs}
+	\end{displaymath}}
+
+\task[task:reverse-preserves]{Prove that $\mathit{reverse}$ preserves singleton lists by rewriting the following equation:
+	\begin{displaymath}
+	\forall \mathit{x} :: a~. \quad \mathit{reverse}~\hslist{x} = \hslist{x}
+	\end{displaymath}}
+
+\task[task:reverse-distributes-over-append]{Prove that $\mathit{reverse}$ distributes over $(\append)$ by induction on $\mathit{xs}$. You will need some of the properties you have proved so far about $(\append)$ and $\mathit{reverse}$.
+	\begin{displaymath}
+	\forall \mathit{xs}~\mathit{ys} :: \hslist{a}~. \quad \mathit{reverse}~(\mathit{xs} \append \mathit{ys}) = \mathit{reverse}~\mathit{ys} \append \mathit{reverse}~\mathit{xs}
+	\end{displaymath}}
+
+\task[task:reverse-of-reverse]{Prove the following property about $\mathit{reverse}$ by induction on $\mathit{xs}$. You will need some of the properties you have proved so far about $(\append)$ and $\mathit{reverse}$.
+	\begin{displaymath}
+	\forall \mathit{xs} :: \hslist{a}~. \quad \mathit{reverse}~(\mathit{reverse}~\mathit{xs}) = \mathit{xs}
+	\end{displaymath}}
+
+\taskLine
+
+\subsubsection{Constructive induction}
+
+It is possible to use induction to \emph{calculate} faster function definitions. This is referred to as \emph{constructive induction}. For example, consider our current definition of \haskellIn{reverse}:
+\begin{minted}{haskell}
+reverse :: [a] -> [a]
+reverse []     = []
+reverse (x:xs) = reverse xs ++ [x]
+\end{minted}
+This definition is inefficient because the \haskellIn{(++)} operator runs in $\mathcal{O}(n)$ time where $n$ is the length of the first argument. The \haskellIn{reverse} function runs in quadratic time as a result. We can do better by combining the behaviour of \haskellIn{reverse} and \haskellIn{(++)} into one new function which does both. We begin by expressing this idea as the following specification:
+\begin{minted}{haskell}
+rev :: [a] -> [a] -> [a]
+rev xs ys = reverse xs ++ ys
+\end{minted}
+The \haskellIn{rev} function takes two lists as arguments, reverses the first and then appends the second list to it. Our goal is now to use induction to come up with a new definition for \haskellIn{rev} which neither uses \haskellIn{reverse} nor \haskellIn{(++)}. We do this by taking the current definition and performing induction on \texttt{\small xs}. Recall that there are two cases for induction on lists: the empty list (a base case) and cons (a recursive case). We can write down a skeleton for the new definition of \haskellIn{rev} by covering these two cases:
+\begin{minted}{haskell}
+rev :: [a] -> [a] -> [a]
+rev []     ys = ???
+rev (x:xs) ys = ???
+\end{minted} 
+
+\task[task:rev-empty]{Replace the \texttt{\small ???} in the first equation by reducing \haskellIn{reverse [] ++ ys} as much as possible. The resulting expression should neither contain \haskellIn{reverse} nor \haskellIn{(++)}. \emph{Hint}: you only need to apply \haskellIn{reverse} and \haskellIn{(++)} until you are left with an expression which cannot be reduced any further. This expression can then be used as the right-hand side of the first equation above.}
+
+\task[task:rev-cons]{Replace the \texttt{\small ???} in the second equation by reducing \haskellIn{reverse (x:xs) ++ ys} as much as possible. The resulting expression should neither contain \haskellIn{reverse} nor \haskellIn{(++)}. \emph{Hint}: in this case, you can use the specification \texttt{\small rev xs ys = reverse xs ++ ys} as induction hypothesis.}
+
+\taskLine

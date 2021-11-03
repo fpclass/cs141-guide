@@ -1,0 +1,91 @@
+\section{Foldables}
+\topics{Foldables.}
+
+These exercises are about foldables, \emph{i.e.} data structures for which we can implement \haskellIn{foldr}. As usual, you can obtain the skeleton code for this this lab by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-foldable
+\end{minted}
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 14 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine 
+
+\task{Consider the following definition of a data type for a simple expression language consisting of variables, integer values, and addition:}
+\begin{minted}{haskell}
+data Expr a = Var a
+            | Val Int
+            | Add (Expr a) (Expr a)
+\end{minted}
+This type is parametrised over some type \texttt{\small a} so that variables (the \haskellIn{Var} constructor) can be represented in different ways depending on what information needs to be associated with variables. This is useful if, for example, you are writing a compiler and want to initially only have variable names associated with your variables, but later add information such as types or line numbers. Some valid examples of \texttt{\small Expr} values are:
+\begin{minted}{haskell}
+e1 = Var "x"
+e2 = Var ("x",22)
+e3 = Val 4 
+e4 = Add (Val 8) (Var "y")
+e5 = Add (Val 8) (Var 7)
+e6 = Add e2 (Var ("y",42))
+e7 = Add e6 e6
+\end{minted}
+Complete the \haskellIn{Foldable} instance for \texttt{\small Expr}. Once implemented, you should be able to do the following in the REPL:
+\begin{minted}{haskell}
+toList e3 ==> []
+toList e5 ==> [7]
+sum e5    ==> 7
+toList e7 ==> [("x",22),("y",42),("x",22),("y",42)]
+length e7 ==> 4
+\end{minted}
+
+\taskLine
+
+\task{A useful data structure in purely functional programming languages is the \emph{zipper}. Zippers can help make traversing data structures more efficient if repeated access to one element is required. Zippers can be defined for arbitrary data structures, but to keep things simple we will only look at lists. For lists, the zipper is defined as shown in the code snippet below:}
+\begin{minted}{haskell}
+data Zipper a = Zipper [a] a [a]
+\end{minted}
+The zipper for lists is a bit like a Turing tape: we have an element of type \texttt{\small a} that is in the ``view'' and we have elements to the ``left'' of it (the first \texttt{\small [a]}) as well as to the ``right'' of it (the second \texttt{\small [a]}). We can convert ordinary, non-empty lists into zippers with a function of type:
+\begin{minted}{haskell}
+fromList :: [a] -> Zipper a
+\end{minted}
+This should work as follows: the head of the input list should be the element that is in the ``view'' and the tail of the input list should be to the ``right'' of the element in the ``view''. Implement this function now and ensure that the tests for it pass.
+
+\task{There are three useful functions to work with zippers. Their type signatures are:}
+\begin{minted}{haskell}
+view  :: Zipper a -> a 
+left  :: Zipper a -> Zipper a 
+right :: Zipper a -> Zipper a
+\end{minted}
+The \haskellIn{view} function simply retrieves the element that is in the ``view''. If the list of elements to the ``right`` of the ``view`` is not empty, the \haskellIn{left} function shifts elements to the ``left'' so that the ``view'' of the input is the first element on the ``left'' and that the first element of the ``right'' of the input is then in the ``view''. The \haskellIn{right} function does the opposite and shifts elements to the ``right''. Implement all three functions now and ensure that the tests pass.
+
+\task{The \texttt{\small Zipper} type can be made an instance of \haskellIn{Foldable}. Complete the definition of \haskellIn{foldr} for it now. In essence, this should satisfy the following equations:}
+\begin{minted}{haskell}
+toList (fromList xs) == xs
+foldr f z (fromList xs) == foldr f z xs
+\end{minted}
+
+\taskLine 
+
+\task{As we have seen in the lectures, we can define very useful functions that work for any type provided that a \haskellIn{Foldable} instance exists. Generalise the \haskellIn{filter} function to a function \haskellIn{filterF} which should work on all types that have an instance of \haskellIn{Foldable}. Some examples of its usage are shown below:}
+\begin{minted}{haskell}
+filterF ((=="x") . fst) e7               ==> [("x",22),("x",22)]
+filterF (>5) (Zipper [1,5,10] 8 [6,7,2]) ==> [10,8,6,7]
+\end{minted}
+
+\task{Could you define an even more general \haskellIn{filter} function which can return the filtered elements in an arbitrary data structure that satisfies some type class constraints? In other words, a function with \emph{e.g.} the following typing where \haskellIn{???} should be replaced by your type class constraints:}
+\begin{minted}{haskell}
+filterFA :: (Foldable f, ??? g) => (a -> Bool) -> f a -> g a
+\end{minted}
+
+\taskLine 
+
+\task{We can write \emph{even more} generic, useful functions by combining multiple type class constraints as follows (note that this uses the \haskellIn{Alternative} type class which is described in full in in \Cref{sec:applicatvies}): }
+\begin{minted}{haskell}
+asum :: (Alternative f, Foldable t) => t (f a) -> f a
+\end{minted}
+Implement this function in terms of \haskellIn{foldr} and \haskellIn{(<|>)} so that combines the elements of some data structure with \haskellIn{(<|>)}. See below for examples of \haskellIn{asum} in action:
+\begin{minted}{haskell}
+asum [Nothing, Just 4, Nothing]                   ==> Just 4
+asum (Zipper [Just 4, Nothing] (Just 5) [])       ==> Just 4
+asum (Zipper [Nothing, Nothing] (Just 5) [])      ==> Just 5
+asum (Zipper [Nothing, Nothing] Nothing [Just 1]) ==> Just 1
+\end{minted}
+
+\taskLine 

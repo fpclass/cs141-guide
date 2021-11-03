@@ -1,0 +1,103 @@
+\section{Data types}
+\label{sec:lab-data-types}
+\topics{Algebraic data types, pattern matching, type parameters, type class instances, records.}
+
+These exercises are about algebraic data types in Haskell. You can obtain the skeleton code by cloning the repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-data-types
+\end{minted}
+Algebraic data types (or just data types for short) are the primary way for us to define our own types.
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 8 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 8.1 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine
+
+A fairly simple example of an algebraic data type is the following:
+\begin{minted}{haskell}
+data IntPos = IntPos Int Int
+\end{minted}
+This type, named \haskellIn{IntPos}, has a single constructor, also named \haskellIn{IntPos} with two parameters of type \haskellIn{Int}. The purpose of this type is to represent 2-dimensional positions.
+
+\task{What is the type of the \haskellIn{IntPos} constructor? Use the REPL and \texttt{\small :t IntPos} to check your answer.}
+
+\task{It would be useful to test whether two values of type \haskellIn{IntPos} are the same. Complete the instance of the \haskellIn{Eq} type class for \haskellIn{IntPos}. Ensure that your implementation is correct by checking that both tests for it pass.}
+
+\task{It would also be useful to be able to turn values of type \haskellIn{IntPos} into corresponding \haskellIn{String} representations so that we can show them in the REPL. Complete the \haskellIn{Show} instance for \haskellIn{IntPos}. For example:}
+\begin{minted}{haskell}
+*Lab Lab> show (IntPos 4 15)
+"IntPos 4 15"
+\end{minted}
+
+\task{Complete the definition of \haskellIn{zeroPos}, which should represent the position where both coordinates are 0.}
+
+\task{Complete the definitions of the \haskellIn{x} and \haskellIn{y} functions, which should extract the first and second coordinate from an \haskellIn{IntPos} value, respectively. For example:}
+\begin{minted}{haskell}
+*Lab Lab> y (IntPos 4 15)
+15
+\end{minted} 
+
+\taskLine 
+
+Often it is useful to define types as generically as possible. While our \haskellIn{IntPos} type is fine if we only ever want to represent positions using integer coordinates, we would have to duplicate a lot of code if we ever wanted to \emph{e.g.} represent positions using floating point numbers as coordinates.
+\begin{minted}{haskell}
+data Pos a = Pos a a 
+\end{minted}
+
+\task{What is the type of the \haskellIn{Pos} constructor? Use the REPL and \texttt{\small :t Pos} to check your answer.}
+
+\task{It would be useful to test whether two values of type \haskellIn{Pos} are the same. Complete the instance of the \haskellIn{Eq} type class for \haskellIn{Pos}. Ensure that your implementation is correct by checking that both tests for it pass.}
+
+\task{It would also be useful to be able to turn values of type \haskellIn{Pos} into corresponding \haskellIn{String} representations so that we can show them in the REPL. Complete the \haskellIn{Show} instance for \haskellIn{Pos}. For example:}
+\begin{minted}{haskell}
+*Lab Lab> show (Pos 4.2 15.16)
+"Pos 4.2 15.16"
+\end{minted}
+
+\task{Complete the definition of \haskellIn{zero}, which should represent the position where both coordinates are 0.}
+
+\task{Complete the definitions of the \haskellIn{left} and \haskellIn{top} functions, which should extract the first and second coordinate from an \haskellIn{Pos} value, respectively. For example:}
+\begin{minted}{haskell}
+*Lab Lab> top (Pos 4.2 15.16)
+15.16
+\end{minted} 
+Ensure that the tests for \haskellIn{left} and \haskellIn{top} succeed before proceeding.
+
+\task{The Haskell compiler can construct \emph{projection functions} like \haskellIn{left} and \haskellIn{top} which extract individual components from a data constructor automatically. Remove the definitions of \haskellIn{left} and \haskellIn{top} and change the definition of \haskellIn{Pos} to:}
+\begin{minted}{haskell}
+data Pos a = Pos { left :: a, top :: a } 
+\end{minted}
+If you run the tests, you should find that the tests for \haskellIn{left} and \haskellIn{top} still succeed.
+
+%\task{Complete the definition of \haskellIn{distance} which should calculate the distance between two \haskellIn{Pos} values.}
+
+\taskLine
+
+\task{It is important to remember that there are virtually no restrictions on the types of things that we can store in data constructors or that type variables can be instantiated with. For example, the following is a valid use of the \haskellIn{Pos} type we defined:}
+\begin{minted}{haskell}
+*Lab Lab> :t Pos (\x -> True) odd
+Pos (\x -> True) odd :: Integral p => Pos (p -> Bool)
+\end{minted}
+\emph{I.e.} functions can be stored inside of data constructors. To practice this, we have defined the following data type:
+\begin{minted}{haskell}
+data DocumentItem = ListItem (Int -> String)
+
+doc :: [DocumentItem]
+doc = 
+  [ ListItem (\n -> show n ++ ". An item")
+  , ListItem (\n -> concat ["I am item #", show n])
+  , ListItem (\n -> concat ["There. Are. ", show n, ". Items." ])
+  ]
+\end{minted}
+What is the type of \haskellIn{ListItem}? Verify your answer in the REPL.
+
+\task{Complete the definition of the \haskellIn{render} function so that it produces the following results:}
+\begin{minted}{haskell}
+*Lab Lab> render [] 1
+""
+
+*Lab Lab> render (tail doc) 1
+"I am item #1\nThere. Are. 2. Items.\n"
+
+*Lab Lab> render doc 1
+"1. An item\nI am item #2\nThere. Are. 3. Items.\n"
+\end{minted}

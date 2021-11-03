@@ -1,0 +1,82 @@
+\section{Using the standard library} \label{sec:lab-prelude}
+\topics{Prelude, modules and packages, using standard library functions.}
+
+Like most programming languages, Haskell has a standard library which contains many useful definitions that virtually every Haskell program makes some use of. Haskell's standard library is called the \emph{Prelude}. You can find the documentation for the Prelude on Hackage:
+\begin{center}\small 
+	\url{http://hackage.haskell.org/package/base/docs/Prelude.html}
+\end{center}
+Some of the things you see in the documentation there will not make any sense yet, but we will cover most of it as the module progresses. We have already come across some functions from the Prelude, such as \haskellIn{not}. Everything contained in the Prelude is automatically imported into Haskell modules.
+
+\paragraph{Modules} Recall that a module is a collection of definitions and each Haskell source file corresponds to a module. Modules have names such as \haskellIn{Lab}, \haskellIn{Prelude}, or \haskellIn{Data.List}. The name of a module must typically match its filename. \haskellIn{Prelude} is the only module that is imported by default. If you want to import other modules, you can use \haskellIn{import} statements:
+\begin{minted}{haskell}
+import Data.List
+\end{minted}
+This will make everything defined in \haskellIn{Data.List} available in the module you are currently working on. If you do not want to import everything, but only some definitions, you can specify that too. For example, the following \haskellIn{import} statement only imports the \haskellIn{nub} and \haskellIn{sort} functions from \haskellIn{Data.List}:
+\begin{minted}{haskell}
+import Data.List (nub, sort)
+\end{minted}
+If, instead of explicitly listing which definitions you want, you want to state which ones you do not want, you can do that too. We have already seen this in the Functions lab:
+\begin{minted}{haskell}
+import Prelude hiding (not)
+\end{minted}
+Even though \haskellIn{Prelude} is automatically imported, we may sometimes not want everything from it. In the case of the Functions lab, we wanted to define the \haskellIn{not} function ourselves, so we used a \haskellIn{hiding} clause in an \haskellIn{import} statement to state the implementation from \haskellIn{Prelude} should not be imported. 
+
+You can find some more examples of what is available to you with respect to importing modules on the Haskell Wiki\footnote{\url{https://wiki.haskell.org/Import}}.
+
+%\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: The \emph{Loading modules} section of Chapter 7 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} goes into more detail about options available to you with respect to importing modules.
+
+\paragraph{Packages} Collections of Haskell modules can be used to form \emph{packages}. A \texttt{\small .cabal} file is used to describe and configure a package. All of the skeleton projects for the exercises and courseworks have \texttt{\small .cabal} files so you can have a look at those to see what they contain. Packages have names and version numbers. They can also depend on other packages. By default, only the \texttt{\small base} package is added as a dependency to new packages. The \haskellIn{Prelude} module is part of the \texttt{\small base} package. You can view the documentation for \texttt{\small base} on Hackage:
+\begin{center}\small 
+	\url{http://hackage.haskell.org/package/base/}
+\end{center}
+
+\task{For this exercise, we will be creating a simple package from scratch with the help of \texttt{\small stack}. In a terminal, run the following:}
+\begin{minted}{text}
+$ stack new my-package simple-library --resolver=lts-16.27
+\end{minted}
+The \texttt{\small stack new} command is used to create a new package. We have specified \texttt{\small my-package} as the name of the new package and a folder named \texttt{\small my-package} will have been created in the current directory. The \texttt{\small simple-library} argument specifies the template\footnote{\url{https://github.com/commercialhaskell/stack-templates}} that \texttt{\small stack} should use for the new package. Finally, \texttt{\small --resolver=lts-16.27} specifies the stack resolver we want to use, which we set to the same one that is installed on the departmental machines -- we will explain what this is used for later.
+
+\task{Explore the \texttt{\small my-package.cabal} and \texttt{\small src/Lib.hs} files that were created. In the \texttt{\small my-package.cabal} file you will find two lines at the top which specify the name and version of the package:}
+\begin{minted}{text}
+name:                my-package
+version:             0.1.0.0
+\end{minted}
+Further down, you will find a section that describes the build output (a Haskell library):
+\begin{minted}{text}
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+\end{minted}
+This section tells us that the source code for the package can be found in the \texttt{\small src} directory, that there is one module named \texttt{\small Lib}, and that we have a dependency on the \texttt{\small base} package. There is a version constraint placed on the dependency on the \texttt{\small base} package which states that we will accept versions of \texttt{\small base} that are greater or equal to 4.7 and smaller than 5. The version of \texttt{\small base} that is installed is 4.12 so the constraint can be satisfied.
+
+\task{Add a new file named \texttt{\small Util.hs} to the \texttt{\small src} directory and write the following into it:}
+\begin{minted}{haskell}
+module Util where 
+
+double :: Int -> Int 
+double x = x*2
+\end{minted}
+\task{Open \texttt{\small my-package.cabal} and add your new \haskellIn{Util} module to the list of modules for the \texttt{\small exposed-modules} field:}
+\begin{minted}{text}
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib, Util
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+\end{minted}
+\task{In \texttt{\small src/Lib.hs}, import the \haskellIn{Util} module with a suitable \haskellIn{import} statement and create a new definition for a function \haskellIn{quadruple :: Int -> Int} which uses \haskellIn{double} twice to quadruple its argument. Note that the \texttt{\small src/Lib.hs} file that was generated by \texttt{\small stack new} earlier has an \emph{export list} in the module header:}
+\begin{minted}{haskell}
+module Lib (someFunc) where
+\end{minted}
+In order for \haskellIn{quadruple} to be available to other modules that import \haskellIn{Lib} (which includes the REPL), we must either add \haskellIn{quadruple} to the export list:
+\begin{minted}{haskell}
+module Lib (someFunc, quadruple) where
+\end{minted}
+Alternatively, you could  remove the export list entirely
+\begin{minted}{haskell}
+module Lib where
+\end{minted}
+
+\task{Run \texttt{\small stack repl} in your package directory and use your \haskellIn{quadruple} and \haskellIn{double} functions to verify that they work as you would expect. If everything works as intended, then congratulations! You have created your first package from scratch with two modules and you have successfully imported a function from one of the modules into the other.}

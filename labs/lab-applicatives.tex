@@ -1,0 +1,203 @@
+\section{Applicative functors} \label{sec:applicatvies}
+\topics{Applicative functors, parsing.}
+
+These exercises are about using applicative functors. As usual, you can obtain the skeleton code for this this lab by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-applicatives
+\end{minted}
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 11 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 12.2 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+The aim of this lab is to implement a small library for constructing \emph{parsers} as well as to build a parser for a small expression language. At the end of this lab, we will have a function called \haskellIn{parseAndEval} which, given a string representation of simple arithmetic expressions, will be able to convert them into a value of an \haskellIn{Expr} type which is then interpreted. The \haskellIn{parseAndEval} function may fail if the input string is not well formatted. Here are a few examples of how it will work:
+\begin{minted}{haskell}
+parseAndEval "4"                   ==> Just 4
+parseAndEval "(15 + 16)"           ==> Just 31
+parseAndEval "((2 + 4) + (9 + 2))" ==> Just 17
+parseAndEval "(2"                  ==> Nothing
+\end{minted}
+
+\subsubsection{Parsers}
+
+A parser is a program which, given some text as input, attempts to convert it into a more structured representation in memory. For example, a parser might be part of a compiler where it converts code written in a particular programming language into a representation that the compiler can work with, such as a type like \texttt{\small Expr} that we have seen in the lectures. We can therefore think of parsers as functions of the following type:
+\begin{center}
+	\texttt{\small String -> Maybe (a, String)}
+\end{center}
+That is, given a value of type \texttt{\small String} as input, a parser consumes some of the input and tries to return a value of some type \texttt{\small a} (the structured representation) as well as all of the remaining input. However, it may fail and return \haskellIn{Nothing} if the input does not contain something in the format expected by a particular parser. One approach to constructing parsers is called \emph{parser combinators}. The idea is to have a library of very basic parsers, such as one which parses a single character or one which allows choice between two different parsers, and combine them to construct more meaningful parsers. With this in mind, we define a type of parser computations as an algebraic data type. This will ultimately allow us to make the input to individual parsers implicit:
+\begin{minted}{haskell}
+data Parser a = MkParser (String -> Maybe (a, String))
+\end{minted}
+A value of type \texttt{\small Parser a} represents a parser computation which returns a value of \texttt{\small a}. The \haskellIn{MkParser} data constructor has type \texttt{\small (String -> Maybe (a, String)) -> Parser a}. That is, given some function which implements the parsing behaviour, a value of type \texttt{\small Parser a} is returned. You are given a function
+\begin{minted}{haskell}
+parse :: Parser a -> String -> Maybe a
+\end{minted}
+which, given a computation of type \texttt{\small Parser a} and an input \texttt{\small String}, may return some value of type \texttt{\small a} wrapped into \haskellIn{Just} or \haskellIn{Nothing} if parsing failed.
+
+\taskLine 
+
+\task[task:parser-ch]{Implement the \haskellIn{ch} function which, given a predicate on \texttt{\small Char} values, should construct a parser which inspects the first character in its input: if the first character satisfies the predicate, then the character should be returned together with the remaining input. If the first character does not satisfy the predicate or the input is empty, then the parser should return \haskellIn{Nothing}:}
+\begin{minted}{haskell}
+parse (ch (=='x')) ""    ==> Nothing
+parse (ch (=='x')) "yzx" ==> Nothing
+parse (ch (=='x')) "xyz" ==> Just ('x',"yz")
+\end{minted}
+
+\taskLine 
+
+\task[task:parser-functor]{The \texttt{\small Parser} type is a functor where we can apply functions of type \texttt{\small a -> b} to the result of the parser. Complete the \texttt{\small Functor} instance for \texttt{\small Parser} by replacing \haskellIn{undefined} with suitable code:}
+\begin{minted}{haskell}
+instance Functor Parser where 
+    -- fmap :: (a -> b) -> Parser a -> Parser b
+    fmap f (MkParser p) = undefined
+\end{minted}
+Once implemented, you should be able to run the following expressions in the REPL to get the results shown:
+\begin{minted}{haskell}
+parse (fmap isUpper (ch (=='x'))) "xyz"    ==> Just (False,"yz")
+parse (fmap isUpper (ch (=='y'))) "xyz"    ==> Nothing
+parse (fmap digitToInt (ch isDigit)) "1xy" ==> Just (1,"xy")
+parse (fmap digitToInt (ch isDigit)) "xy"  ==> Nothing
+\end{minted}
+
+\taskLine 
+
+\task[task:parser-pure]{The \texttt{\small Parser} type is also an applicative functor. The \haskellIn{pure} function should construct a parser which does not touch its input and always returns the argument of type \texttt{\small a} that is given to \haskellIn{pure}:}
+\begin{minted}{haskell}
+instance Applicative Parser where
+   -- pure :: a -> Parser a
+   pure x = undefined
+\end{minted}
+Once you have implemented \haskellIn{pure}, the following expressions should evaluate to the results shown:
+\begin{minted}{haskell}
+parse (pure True) "xyz" ==> Just (True, "xyz")
+parse (pure True) ""    ==> Just (True, "")
+parse (pure 42) "123"   ==> Just (42, "123")
+\end{minted}
+
+\task[task:parser-applicative]{The \haskellIn{(<*>)} operator should compose two parsers into one parser. For \texttt{\small Parser}, it has the following type:}
+\begin{minted}{haskell}
+(<*>) :: Parser (a -> b) -> Parser a -> Parser b
+\end{minted}
+That is, given two parsers where one returns a function of type \texttt{\small a -> b} and one returns a value of type \texttt{\small a}, it should construct a parser which combines the two parsers given as arguments into one parser that returns a value of type \texttt{\small b}. You are given the following skeleton:
+\begin{minted}{haskell}
+(MkParser a) <*> p = MkParser $ \xs -> case a xs of
+    Nothing      -> undefined
+    Just (f, ys) -> let (MkParser b) = p in case b ys of
+        Nothing      -> undefined
+        Just (x, zs) -> undefined
+\end{minted}
+The intuition here is that \haskellIn{(<*>)} returns a computation of type \texttt{\small Parser b}, \emph{i.e.} a parser computation which returns a value of type \texttt{\small b}. This computation is defined using the \haskellIn{MkParser} constructor applied to a parsing function, which takes a string \texttt{\small xs} as input, then applies the parsing function \texttt{\small a}, obtained from pattern-matching on the computation of type \texttt{\small Parser (a -> b)}, to it. This either results in failure, in which case the whole thing should fail (you need to fill in this behaviour for the first \haskellIn{undefined}). If \texttt{\small a xs} is successful, then the result is a function \texttt{\small f~::~a -> b} and the remaining input \texttt{\small ys~::~String}. We then pattern-match on \texttt{\small p~::~Parser a} to obtain the second parsing function \texttt{\small b~::~String -> Maybe (a, String)} which we then apply to the remaining input \texttt{\small ys} obtained from evaluating the first parsing function. Applying \texttt{\small b} to \texttt{\small ys} results in a computation of type \texttt{\small Maybe (a, String)} so we pattern-match on it to determine whether it failed or succeeded. If it failed, the whole thing should fail again (you need to implement this behaviour where the second \haskellIn{undefined} is). If the second parsing function succeeds, then we get a result \texttt{\small x~::~a} and the remaining input \texttt{\small zs~::~String}. You now need to replace the third \haskellIn{undefined} with a value of type \texttt{\small Maybe (b, String)} which should indicate success and contain the result of applying \texttt{\small f} to \texttt{\small x} alongside the remaining input of the second parsing function. Once you have implemented \haskellIn{(<*>)}, the following expressions should evaluate to the results shown:
+\begin{minted}{haskell}
+parse (pure digitToInt <*> ch isDigit) "1yz" 
+==> Just (1,"yz")
+parse (pure digitToInt <*> ch isDigit) "xyz" 
+==> Nothing 
+parse ((\x y -> [x,y]) <$> ch isDigit <*> ch isDigit) "123" 
+==> Just ("12","3")
+parse ((\x y -> [x,y]) <$> ch isDigit <*> ch isDigit) "x23" 
+==> Nothing
+parse ((\x y -> [x,y]) <$> ch isDigit <*> ch isDigit) "1x3" 
+==> Nothing
+\end{minted}
+
+\taskLine
+
+\subsubsection{Alternatives}
+
+When working with applicative functors, it is sometimes useful to express the notion of choice. For example, in the case of parsers, if one parser returns failure, we may want to try a different parser to see if it succeeds instead. The \haskellIn{Alternative} type class provides some functions and operators to support this idea:
+\begin{minted}{haskell}
+class Applicative f => Alternative f where
+    empty :: f a
+    (<|>) :: f a -> f a -> f a
+
+    some  :: f a -> f [a]
+    some p = (:) <$> p <*> many p
+
+    many  :: f a -> f [a]
+    many p = some p <|> pure []
+\end{minted}
+
+\taskLine
+
+\task[task:parser-empty]{For the \texttt{\small Parser} type, the \haskellIn{empty} value has type \texttt{\small Parser a}. It should represent a computation which \emph{always} fails. For example:}
+\begin{minted}{haskell}
+parse empty "xyz"                                 ==> Nothing
+parse (const <$> ch (const True) <*> empty) "xyz" ==> Nothing
+\end{minted}
+As an aside, \haskellIn{ch (const True)} is a parser which will accept any character.
+
+\task[task:parser-or]{The \haskellIn{(<|>)} operator has type \texttt{\small Parser a -> Parser a -> Parser a} for the \haskellIn{Alternative} instance for \texttt{\small Parser}. The intuition with this operator is that it will try the first parser. If the first parser succeeds, then its result is returned. Otherwise, the second parser is used and its result determines the overall result. For example:}
+\begin{minted}{haskell}
+parse (ch (=='x') <|> ch (=='y')) "x12" ==> Just ('x', "12")
+parse (ch (=='x') <|> ch (=='y')) "y12" ==> Just ('y', "12")
+parse (ch (=='x') <|> ch (=='y')) "z12" ==> Nothing
+parse (ch (=='x') <|> ch isDigit) "y12" ==> Nothing
+parse (ch (=='x') <|> ch isDigit) "x12" ==> Just ('x', "12")
+parse (ch (=='x') <|> ch isDigit) "012" ==> Just ('0', "12")
+\end{minted}
+
+\task[task:parser-alternatives]{The \haskellIn{some} and \haskellIn{many} functions may be used to repeatedly invoke \texttt{\small p} and to generate a list of the results. While \haskellIn{some} should only succeed with the list of results obtained from \texttt{\small p} if \texttt{\small p} succeeds at least once, \haskellIn{many} should also return with the list of results obtained from \texttt{\small p} but may return the empty list if \texttt{\small p} does not even succeed once. You will have to implement either \haskellIn{some} or \haskellIn{many} as the default implementations are defined in terms of each other. For example:}
+\begin{minted}{haskell}
+parse (some (ch isDigit)) "xyz"    ==> Nothing
+parse (many (ch isDigit)) "xyz"    ==> Just ("", "xyz")
+parse (some (ch isDigit)) "1xyz"   ==> Just ("1", "xyz")
+parse (many (ch isDigit)) "1xyz"   ==> Just ("1", "xyz")
+parse (some (ch isDigit)) "123xyz" ==> Just ("123", "xyz")
+parse (many (ch isDigit)) "123xyz" ==> Just ("123", "xyz")
+\end{minted}
+
+\taskLine
+
+\subsubsection{Parser combinators}
+
+We can now define some basic parsers for common things we might wish to do. We will later be able to combine these basic parsers into more sophisticated parsers. 
+
+\taskLine 
+
+\task[task:parser-token]{Complete the definition of \haskellIn{token}, which should return the result of \texttt{\small p} which may be preceded by zero or more whitespace characters. The \texttt{\small whitespace :: Parser String} computation will be of use, which parses zero or more whitespace characters.}
+\begin{minted}{haskell}
+parse (token (ch (=='?'))) "?"     ==> Just ('?', "")
+parse (token (ch (=='?'))) "    ?" ==> Just ('?', "")
+\end{minted}
+\emph{Hint}: The \haskellIn{(*>)} and \haskellIn{(<*)} from the lecture on applicative functors will be useful for this definition as well as coming ones.
+
+\task[task:parser-between]{Complete the definition of \haskellIn{between}, which should return the result of \texttt{\small p}. \texttt{\small p} should be preceded by \texttt{\small open} and followed by \texttt{\small close}, the results of which should be discarded.}
+\begin{minted}{haskell}
+parse (between (ch (=='{')) (ch (=='}')) nat) "123}"  
+==> Nothing
+parse (between (ch (=='{')) (ch (=='}')) nat) "{123"  
+==> Nothing
+parse (between (ch (=='{')) (ch (=='}')) nat) "{123}" 
+==> Just (123,"") 
+\end{minted}
+
+\taskLine 
+
+\subsubsection{Expression language}
+
+The final part of this exercise is to implement a parser for a small expression language using the parser combinators and type class instances we have implemented so far. Expressions in this language are represented by the following algebraic data type:
+\begin{minted}{haskell}
+data Expr = Val Int | Add Expr Expr
+\end{minted}
+Given a value of type \texttt{\small Expr}, we can map it to a corresponding \texttt{\small Int} value with the help of the following function (an interpreter):
+\begin{minted}{haskell}
+eval :: Expr -> Int 
+eval (Val n)   = n
+eval (Add l r) = eval l + eval r
+\end{minted}
+
+\taskLine 
+
+\task[task:hutton-prims]{With the help of \haskellIn{token} and \haskellIn{ch}, implement the \haskellIn{lparen}, \haskellIn{rparen}, and \haskellIn{plus} parsers. The \haskellIn{lparen} parser should parse \texttt{\small (}, \haskellIn{rparen} should parse \texttt{\small )}, and \haskellIn{plus} should parse \texttt{\small +}. Each may optionally be preceded by whitespace which should be ignored: }
+\begin{minted}{haskell}
+parse lparen "("    ==> Just ('(', "")
+parse lparen "   (" ==> Just ('(', "")
+parse rparen ")"    ==> Just (')', "")
+parse rparen "   )" ==> Just (')', "")
+parse plus "+"      ==> Just ('+', "")
+parse plus "   +"   ==> Just ('+', "")
+\end{minted}
+
+\task[task:hutton-expr-parser]{Implement the \haskellIn{expr} parser which should either accept \haskellIn{val} or \haskellIn{add}.}
+
+You should now be able to run \haskellIn{parseAndEval} on strings containing simple arithmetic expressions as shown in the introduction to this lab.
+
+\taskLine 

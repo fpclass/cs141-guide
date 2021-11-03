@@ -1,0 +1,140 @@
+\pagebreak \section{Functors}
+
+\solution{\ref{task:identity-functor}}{Let us prove the two functor laws for the \haskellIn{Identity} type. First up:}
+\begin{displaymath}
+\forall x :: \mathit{a}~. \quad \mathit{fmap}~\mathit{id}~(\mathit{Identity}~x) = \mathit{id}~(\mathit{Identity}~x)
+\end{displaymath}
+We can prove this simply by rewriting the equations:
+\begin{align*}
+\expr{\mathit{fmap}~\mathit{id}~(\mathit{Identity}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Identity}~(\mathit{id}~x)}
+\hint{applying $\mathit{id}$}
+\expr{\mathit{Identity}~x}
+\hint{unapplying $\mathit{id}$}
+\lastexpr{\mathit{id}~(\mathit{Identity}~x)}
+\end{align*}
+Next up is the fusion proof:
+\begin{displaymath}
+\forall x :: \mathit{a}, f :: b \to c, g :: a \to b~. \quad \mathit{fmap}~(f \circ g)~(\mathit{Identity}~x) = (\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Identity}~x)
+\end{displaymath}
+The proof for this is again accomplished by just rewriting one side of the equation:
+\begin{align*}
+\expr{\mathit{fmap}~(f \circ g)~(\mathit{Identity}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Identity}~((f \circ g)~x)}
+\hint{applying $\circ$}
+\expr{\mathit{Identity}~(f~(g~x))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{Identity}~(g~x))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{fmap}~g~(\mathit{Identity}~x))}
+\hint{unapplying $\circ$}
+\lastexpr{(\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Identity}~x)}
+\end{align*}
+
+\solution{\ref{task:const-functor}}{Let us prove the two functor laws for the \haskellIn{Const} type. First up:}
+\begin{displaymath}
+\forall x :: \mathit{v}~. \quad \mathit{fmap}~\mathit{id}~(\mathit{Const}~x) = \mathit{id}~(\mathit{Const}~x)
+\end{displaymath}
+We can prove this simply by rewriting the equations:
+\begin{align*}
+\expr{\mathit{fmap}~\mathit{id}~(\mathit{Const}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Const}~x}
+\hint{unapplying $\mathit{id}$}
+\lastexpr{\mathit{id}~(\mathit{Const}~x)}
+\end{align*}
+Next up is the fusion proof:
+\begin{displaymath}
+\forall x :: \mathit{v}, f :: b \to c, g :: a \to b~. \quad \mathit{fmap}~(f \circ g)~(\mathit{Const}~x) = (\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Const}~x)
+\end{displaymath}
+The proof for this is again accomplished by just rewriting one side of the equation:
+\begin{align*}
+\expr{\mathit{fmap}~(f \circ g)~(\mathit{Const}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Const}~x}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{Const}~x)}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{fmap}~g~(\mathit{Const}~x))}
+\hint{unapplying $\circ$}
+\lastexpr{(\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Const}~x)}
+\end{align*}
+
+\solution{\ref{task:point-functor}}{Let us prove the two functor laws for the \haskellIn{Point} type. First up:}
+\begin{displaymath}
+\forall x~y :: \mathit{a}~. \quad \mathit{fmap}~\mathit{id}~(\mathit{Point}~x~y) = \mathit{id}~(\mathit{Point}~x~y)
+\end{displaymath}
+We can prove this simply by rewriting the equations:
+\begin{align*}
+\expr{\mathit{fmap}~\mathit{id}~(\mathit{Point}~x~y)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Point}~(\mathit{id}~x)~(\mathit{id}~y)}
+\hint{applying $\mathit{id}$ twice}
+\expr{\mathit{Point}~x~y}
+\hint{unapplying $\mathit{id}$}
+\lastexpr{\mathit{id}~(\mathit{Point}~x~y)}
+\end{align*}
+Next up is the fusion proof:
+\begin{displaymath}
+\forall x~y :: \mathit{a}, f :: b \to c, g :: a \to b~. \quad \mathit{fmap}~(f \circ g)~(\mathit{Point}~x~y) = (\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Point}~x~y)
+\end{displaymath}
+The proof for this is again accomplished by just rewriting one side of the equation:
+\begin{align*}
+\expr{\mathit{fmap}~(f \circ g)~(\mathit{Point}~x~y)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Point}~((f \circ g)~x)~((f \circ g)~y)}
+\hint{applying $\circ$ twice}
+\expr{\mathit{Point}~(f~(g~x))~(f~(g~y))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{Point}~(g~x)~(g~y))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{fmap}~g~(\mathit{Point}~x~y))}
+\hint{unapplying $\circ$}
+\lastexpr{(\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Point}~x~y)}
+\end{align*}
+
+\solution{\ref{task:compose-functor}}{Let us prove the two functor laws for the \haskellIn{Compose} type. First up:}
+\begin{displaymath}
+\forall x :: \mathit{f}~(g~a). \quad \mathit{fmap}~\mathit{id}~(\mathit{Compose}~x) = \mathit{id}~(\mathit{Compose}~x)
+\end{displaymath}
+We can prove this again simply by rewriting the equations:
+\begin{align*}
+\expr{\mathit{fmap}~\mathit{id}~(\mathit{Compose}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Compose}~(\mathit{fmap}~(\mathit{fmap}~\mathit{id})~x)}
+\hint{the type $g$ is a functor, therefore the identity law holds}
+\expr{\mathit{Compose}~(\mathit{fmap}~\mathit{id}~x)}
+\hint{the type $f$ is a functor, therefore the identity law holds}
+\expr{\mathit{Compose}~(\mathit{id}~x)}
+\hint{applying $\mathit{id}$}
+\expr{\mathit{Compose}~x}
+\hint{unapplying $\mathit{id}$}
+\lastexpr{\mathit{id}~(\mathit{Compose}~x)}
+\end{align*}
+Next up is the fusion proof:
+\begin{displaymath}
+\begin{array}{lc}
+\forall x :: f~(g~a), f :: b \to c, g :: a \to b~. & \\ 
+\multicolumn{2}{l}{\quad \mathit{fmap}~(f \circ g)~(\mathit{Compose}~x) = (\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Compose}~x)}
+\end{array}
+\end{displaymath}
+The proof for this is again accomplished by just rewriting one side of the equation:
+\begin{align*}
+\expr{\mathit{fmap}~(f \circ g)~(\mathit{Compose}~x)}
+\hint{applying $\mathit{fmap}$}
+\expr{\mathit{Compose}~(\mathit{fmap}~(\mathit{fmap}~(f \circ g))~x)}
+\hint{the type $g$ is a functor, therefore the fusion law holds}
+\expr{\mathit{Compose}~(\mathit{fmap}~(\mathit{fmap}~f \circ \mathit{fmap}~g)~x)}
+\hint{the type $f$ is a functor, therefore the fusion law holds}
+\expr{\mathit{Compose}~((\mathit{fmap}~(\mathit{fmap}~f) \circ \mathit{fmap}~(\mathit{fmap}~g))~x)}
+\hint{applying $\circ$}
+\expr{\mathit{Compose}~(\mathit{fmap}~(\mathit{fmap}~f)~(\mathit{fmap}~(\mathit{fmap}~g)~x))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{Compose}~(\mathit{fmap}~(\mathit{fmap}~g)~x))}
+\hint{unapplying $\mathit{fmap}$}
+\expr{\mathit{fmap}~f~(\mathit{fmap}~g~(\mathit{Compose}~x))}
+\hint{unapplying $\circ$}
+\lastexpr{(\mathit{fmap}~f \circ \mathit{fmap}~g)~(\mathit{Compose}~x)}
+\end{align*}

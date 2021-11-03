@@ -1,0 +1,199 @@
+\section{Recursive data types}
+\topics{Algebraic data types, binary trees, and red-black trees.}
+
+These exercises are about recursive data types in Haskell. You can obtain the skeleton code by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-recursive-types
+\end{minted}
+
+\makebox[0.5cm]{\faLightbulbO}~Note that the skeleton code for these exercises will not initially compile and you need to complete some of the exercises first before it does. 
+
+\makebox[0.5cm]{\faLightbulbO}~Some of the unit tests simultaneously test several of your functions, such as \emph{e.g.} to ensure that your trees have the correct depth after several insertions -- a test failure could be due to an error in any one of the tested functions.
+
+\makebox[0.5cm]{\faLightbulbO}~You may wish to read your \emph{CS126 Design of Information Structures} notes or equivalent in conjunction with these exercises.
+
+\makebox[0.5cm]{\faBook}~\emph{Further reading}: if you are interested in the implementation of data structures in purely functional programming languages, \emph{Purely functional data structures} \citep{okasaki1999purely} is an excellent book.
+
+\taskLine 
+
+In Haskell, binary trees may be represented using the following data type:
+\begin{minted}{haskell}
+data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
+\end{minted}
+We parametrise the \texttt{\small BinaryTree} type over some type \texttt{\small a} to allow it to store values of some arbitrary type. Nodes contain a left subtree of type \texttt{\small BinaryTree a}, a value of type \texttt{\small a}, and a right subtree also of type \texttt{\small BinaryTree a}. An empty binary tree can be represented as follows:
+\begin{minted}{haskell}
+empty :: BinaryTree a
+empty = Leaf
+\end{minted}
+A particular variant of a binary tree is a \emph{binary search tree}. Elements are inserted into branches of the tree according to some partial ordering relation. We can define a function to insert values into a binary search tree:
+\begin{minted}{haskell}
+insert :: Ord a => BinaryTree a -> a ->  BinaryTree a
+insert Leaf x = Node Leaf x Leaf
+insert (Node l y r) x
+    | x < y     = Node (insert l x) y r 
+    | x > y     = Node l y (insert r x) 
+    | otherwise = Node l y r
+\end{minted}
+If the binary tree is empty, we create a node for the value \haskellIn{x} we are trying to insert whose subtrees are empty. If the binary tree is a node, we compare the value \haskellIn{x} we are trying to insert with the value of the node \haskellIn{y}. If \haskellIn{x} is less than \haskellIn{y}, we insert it into the left subtree. If \haskellIn{x} is greater than \haskellIn{y}, we insert it into the right subtree. If \haskellIn{x} and \haskellIn{y} are equal, then the tree already contains the value and we don't do anything. In other words, our binary trees represent a set where each value may only appear once.
+
+However, this implementation of binary search trees is not \emph{balanced}. If we repeatedly insert values that are \emph{e.g.} increasing, then we essentially end up with a linked list:
+\begin{minted}{haskell}
+   foldl insert empty [1..5]
+=> Node Leaf 1 (Node Leaf 2 (Node Leaf 3 (
+         Node Leaf 4 (Node Leaf 5))))
+\end{minted}
+Looking up an element therefore has a worst-case time complexity of $\mathcal{O}(n)$ for trees with $n$ elements. We can do better. \emph{Red-black trees} are a way of keeping binary trees balanced so that the depth of all branches in the tree is roughly the same. If it is then used as a search tree, looking up elements takes at most $\mathcal{O}(\log n)$ time.
+
+\taskLine
+
+\task[task:adt-colours]{Complete the definition of the \texttt{\small Colour} data type by replacing the \texttt{\small ???} with suitable data constructors. The \texttt{\small Colour} type should represent either the colour \haskellIn{Red} or the colour \haskellIn{Black}.}
+
+\task[task:adt-colours-show]{Complete the \texttt{\small Show} instance for the \texttt{\small Colour} type so that \haskellIn{show Red} evaluates to \haskellIn{"Red"} and \haskellIn{show Black} evaluates to \haskellIn{"Black"}.}
+
+\taskLine
+
+\task[task:adt-rbtrees]{Complete the definition of the \texttt{\small Tree} data type by replacing the \texttt{\small ???} with a suitable data constructor for \haskellIn{Node}s. The \texttt{\small Tree} type should represent red-black trees. The \haskellIn{Leaf} constructor is already given to you. You need to add one more constructors for \haskellIn{Node}s, which consist of a colour, left subtree, value, and a right subtree.}
+
+\task[task:adt-empty]{Complete the definition of \haskellIn{empty}, which should represent an empty red-black tree.}
+
+\task[task:adt-singleton]{Complete the definition of the \haskellIn{singleton} function which takes some element of type \texttt{\small a} and constructs a red-black tree containing only that element. Use \haskellIn{Red} as the colour. For example, \haskellIn{singleton 5} should evaluate to \haskellIn{Node Red Leaf 5 Leaf} or equivalent depending on your definition of the \haskellIn{Node} constructor.}
+
+\task[task:adt-make-black]{Complete the definition of the \haskellIn{makeBlack} function which, given some arbitrary red-black tree, should change the colour of the root node to \haskellIn{Black} regardless of its current colour.}
+
+\task[task:adt-depth]{Complete the definition of the \haskellIn{depth} function which, given some arbitrary red-black tree, should calculate the depth of the tree. An empty red-black tree should have depth 0 so that \haskellIn{depth Leaf} evaluates to \haskellIn{0}}.
+
+\task[task:adt-toList]{Implement the \haskellIn{toList} function which should convert a red-black tree to a list through inorder traversal.}
+
+\taskLine
+
+\task[task:adt-member]{Complete the definition of the \haskellIn{member} function, which given some value of type \texttt{\small a} and a red-black tree, should determine whether the value is contained in the tree.}
+
+\taskLine
+
+\begin{fancyfig}{Balancing red-black trees}{fig:rbtree-balance}
+\begin{center}
+\begin{tabular}{
+	>{\centering\arraybackslash}m{4.5cm}
+	>{\centering\arraybackslash}m{0.5cm}
+	>{\centering\arraybackslash}m{4.0cm}
+	>{\centering\arraybackslash}m{0.5cm}
+	>{\centering\arraybackslash}m{4.0cm}}
+&& 
+\begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 2.0cm/#1,
+	level distance = 1.5cm}] 
+\node [arn_n] {z}
+child{ node [arn_r] {x} 
+	child{ node [arn_x] {a} }
+	child{ node [arn_r] {y}
+		child{ node [arn_x] {b}}
+		child{ node [arn_x] {c}}
+	}                            
+}
+child{ node [arn_x] {d}
+}
+; 
+\end{tikzpicture}
+&& \\
+&& $\Downarrow$ && \\
+\begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 2.0cm/#1,
+	level distance = 1.5cm}] 
+\node [arn_n] {z}
+child{ node [arn_r] {y} 
+	child{ node [arn_r] {x}
+		child{ node [arn_x] {a}}
+		child{ node [arn_x] {b}}
+	} 
+	child{ node [arn_x] {c} }                           
+}
+child{ node [arn_x] {d}
+}
+; 
+\end{tikzpicture} & $\Rightarrow$ & 
+\begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 2.0cm/#1,
+	level distance = 1.5cm}] 
+\node [arn_r] {y}
+child{ node [arn_n] {x} 
+	child{ node [arn_x] {a} }
+	child{ node [arn_x] {b} }                           
+}
+child{ node [arn_n] {z}
+	child{ node [arn_x] {c}}
+	child{ node [arn_x] {d}}
+} 
+; 
+\end{tikzpicture} & 
+$\Leftarrow$ &
+\begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 2.0cm/#1,
+	level distance = 1.5cm}] 
+\node [arn_n] {x}
+child{ node [arn_x] {a}}
+child{ node [arn_r] {y} 
+	child{ node [arn_x] {b} }
+	child{ node [arn_r] {z}
+		child{ node [arn_x] {c}}
+		child{ node [arn_x] {d}}
+	}                            
+}
+; 
+\end{tikzpicture} \\
+&& $\Uparrow$ && \\[2cm]
+&& \begin{tikzpicture}[->,>=stealth',level/.style={sibling distance = 2.0cm/#1,
+	level distance = 1.5cm}] 
+\node [arn_n] {x}
+child{ node [arn_x] {a}}
+child{ node [arn_r] {z} 
+	child{ node [arn_r] {y}
+		child{ node [arn_x] {b}}
+		child{ node [arn_x] {c}}
+	} 
+	child{ node [arn_x] {d} }                           
+}
+; 
+\end{tikzpicture} &&
+\end{tabular}
+\end{center}
+\end{fancyfig}
+
+\task[task:adt-balance]{Complete the definition of the \haskellIn{balance} function, which given some arbitrary red-black tree, should balance it according to the transformations shown in \Cref{fig:rbtree-balance}. } 
+
+You can accomplish this simply by pattern-matching on the tree given as input to determine whether it is unbalanced and returning a balanced version of it if necessary. One of the four transformations is already implemented for you.
+
+\taskLine
+
+\task[task:adt-insert]{Complete the definition of the \haskellIn{insert} function, which should insert some value of type \texttt{\small a} into a red-black tree. New nodes in the tree should initially be red. Use the \haskellIn{balance} function in the appropriate places to ensure that the resulting tree is balanced. The root of a red-black tree should always be black. For example, if you insert a bunch of elements from a list into a tree, the result in the REPL might look something like this:
+}
+
+\begin{minted}{haskell}
+Lab> foldl insert empty []
+Leaf
+
+Lab> foldl insert empty [42]
+Node Black Leaf 42 Leaf
+
+Lab> foldl insert empty ["CS141", "CS263"]
+Node Black Leaf "CS141" (Node Red Leaf "CS263" Leaf)
+
+Lab> foldl insert empty "KOAN"
+Node Black 
+    (Node Black (Node Red Leaf 'A' Leaf) 'K' Leaf) 
+    'N' 
+    (Node Black Leaf 'O' Leaf)
+
+Lab> foldl insert empty "WITTER"
+Node Black 
+    (Node Black (Node Red Leaf 'E' Leaf) 
+    'I' 
+    (Node Red Leaf 'R' Leaf)) 'T' (Node Black Leaf 'W' Leaf)
+\end{minted}
+
+The exact result depends on the names you chose for your constructors and the order of their parameters. There are two unit tests for this lab which check that the depth of your red-black trees never exceed $2 \times \left \lfloor{\log(n+1)}\right \rfloor$ where $n$ is the number of nodes in the tree and that converting a red-black tree to a list results in a sorted list. 
+
+\task[task:adt-invariants]{There are two invariants which red-black trees should never violate:
+\begin{enumerate}
+	\item No red node has a red child.
+	\item Every path from the root to a leaf contains the same number of black nodes.
+\end{enumerate}
+Convince yourself that these invariants are not violated by your implementation.
+}
+
+\taskLine

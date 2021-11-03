@@ -1,0 +1,80 @@
+\section{Functions}
+\topics{Definitions, basic arithmetic expressions, string values, boolean values, functions, and basic pattern matching.}
+
+This is the first ``real'' set of exercises for the module which cover the content of the second lecture on definitions and functions in Haskell. If you have missed the lecture or want to read over the relevant chapters in the textbooks first, we always point out the recommended reading at the start of an exercise sheet:
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapters 1 and 2 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapters 1 and 2 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+Remember that \emph{Learn you a Haskell} is freely available online and so it is a great reference of notes for Haskell programming. As with the previous exercises, there is some skeleton code which you can obtain by cloning it from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-functions
+\end{minted}
+Unlike in the previous set of exercises, where we used \bashIn{stack run} to compile and run the program, we will not actually be creating runnable programs for most of the exercises. Instead you may wish to just compile the code with \bashIn{stack build}:
+\begin{minted}{text}
+$ cd lab-functions
+$ stack build
+\end{minted}
+This will compile the code and any errors that arise will be reported to you so that you can fix them. A very useful tool which you may find helpful for completing the exercises and debugging your code is a Read-Eval-Print Loop (or REPL for short). This is offered by many modern programming languages and development tools, including the Glasgow Haskell Compiler (which \bashIn{stack} is using behind the scenes). You can launch the REPL by invoking the following command in \emph{e.g.} the \texttt{\small lab-functions} folder:
+\begin{minted}{bash}
+$ stack repl
+\end{minted}
+This loads the code for these exercises and allows you to enter arbitrary expressions which the REPL will evaluate for you. You should see something similar to the following prompt:
+\begin{minted}{haskell}
+*Lab Lab>
+\end{minted}
+Simply enter an expression like \haskellIn{1+1} and hit enter to evaluate it. The REPL will print the result of evaluating the expression:
+\begin{minted}{haskell}
+*Lab Lab> 1+1
+2
+\end{minted}
+There is a \texttt{\small src/Lab.hs} file in the \texttt{\small lab-functions} directory which contains some definitions for this lab. Because we have run \bashIn{stack repl} in the directory with the code (\texttt{\small lab-functions}), the REPL has automatically loaded the the \texttt{\small src/Lab.hs} file for us, so you can refer to definitions in it:
+\begin{minted}{haskell}
+*Lab Lab> name
+"Michael"
+*Lab Lab> age * 2
+58
+\end{minted}
+
+\task{At this point you may wish to read \Cref{ch:tools} if you have not done so already and set up your text editor to suit your preferences. If you are using VSCode, the \bashIn{haskell-setup.sh} script you ran earlier will already have installed some Haskell-related plugins for you.}
+
+\task{Open the \texttt{\small src/Lab.hs} file in your preferred text editor and modify the definitions of \haskellIn{age} and \haskellIn{name} to match your name and age.}
+
+Instead of typing an expression which should be evaluated by the REPL, you may also type in a command (all commands start with a colon). The following commands are supported (among others):
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline 
+    \texttt{\small :q}   & Quits the REPL. \\ 
+\hline 
+    \texttt{\small :r}  & Reloads all files that are currently loaded. \\ 
+\hline 
+    \texttt{\small :l FILENAME} & Loads \texttt{\small FILENAME} into the REPL. \\
+\hline
+\end{tabular} 
+\end{center}
+Assuming you did not close the REPL to edit \texttt{\small src/Lab.hs}, it will still be running. The REPL does not automatically check for updates to any files that are currently loaded, so you will have to reload it with the \texttt{\small :r} command. In general, the \texttt{\small :r} command reloads all files that are loaded in the REPL. Now try evaluating \haskellIn{age} and \haskellIn{name} again. They should match whatever values you changed them to.
+
+\task{Complete the definitions of \haskellIn{triple}, \haskellIn{tripleV2}, \haskellIn{not}, \haskellIn{and}, \haskellIn{max}, and \haskellIn{perimeterRect} in \texttt{\small src/Lab.hs}. You can test them in the REPL to see if you have got them right. Remember to reload the file once you have made some changes.}
+
+\task{Some of the above functions, such as \haskellIn{not}, \haskellIn{and}, and \haskellIn{max}, can be defined in many different ways. Aside from your current definitions for them, can you think of one additional way to define each?}
+
+\task{The skeleton code for these exercises (and for many of the other exercise sheets) also comes with a test suite which you can use to test the correctness of your functions. Simply run \texttt{\small stack test} in a terminal window to run all unit tests against your code. You should make sure that all tests succeed. You should see somewhere close to the end of the output:}
+\begin{minted}{text}
+7 examples, 0 failures
+\end{minted}
+If any tests fail, there will be an explanation of why they failed.
+
+\task{On paper (or equivalent), trace the evaluation of}
+\begin{minted}{haskell}
+min (perimeterRect 4 8) (perimeterRect 10 2)
+\end{minted}
+
+\task{With a friend, another student of your choice, or within a small group: each pick one topic from the lectures so far that you found confusing, then get one of the others to try and explain it after a few minutes of preparation.}
+
+\task{With a friend, another student of your choice, or within a small group: discuss whether...}
+\begin{itemize}
+\item ...you think reduction or mutation is easier to understand?
+\item ...you prefer to use indentation (Haskell, Python, ...) or curly brackets (Java, C, ...) to denote scope and why? 
+\end{itemize}
+
+
+

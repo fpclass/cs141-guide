@@ -1,0 +1,261 @@
+\chapter{Tools}
+\label{ch:tools}
+
+Good programmers are lazy. That is because laziness encourages us to seek out the simplest solutions to our problems. Often, this will be achieved by using suitable programming abstractions to write reusable and concise code. However, in order to focus on actually writing code, it is important that we have the right tools to support us in doing so. 
+
+There are a number of programs we use as part of this module. Some are optional and simply make your life easier, while others are essential. You will need to familiarise yourself with them in order to complete the labs and coursework successfully. This section contains an overview of all programs we use or recommend you use with short summaries of what each program does. There are also instructions on how to get started either using the machines in the department or your own.
+
+\section{Getting started on the departmental machines}
+\label{sec:department-setup}
+
+All the tools we need for this module are already installed on the machines in the department. However, the only thing you need to do to get started is run \texttt{\small /modules/cs141/haskell-setup.sh} in a terminal which will set up a number of things for you:
+\begin{itemize}
+	\item It will make the \texttt{\small stack} tool work on your account (see \Cref{sec:stack} for what \texttt{\small stack} is).
+	\item It will install a number of VSCode plugins (see \Cref{sec:dev-tools}) for you which will help you write Haskell programs in VSCode. 
+\end{itemize}
+You should do this before you do anything else and you only need to do this once.
+
+\section{Getting started on your own computer}
+\label{sec:home-setup}
+
+If you also want to work on your own machine, there are several ways in which you may install a Haskell distribution.
+
+\subsection{Option 1: Installation using Stack (recommended)}
+
+Download the Haskell Stack from {\small \url{https://docs.haskellstack.org/en/stable/README/}}. There is a simple command you can run on Unix-based machines and there are installers for Windows. You can also get it from your system's package manager. Once you have installed Stack, you can install the Haskell compiler, GHC, using it as follows. For best compatibility with the module and to save you time, you are encouraged to specify the resolver version that we use for the module this year:
+\begin{minted}{bash}
+$ stack setup --resolver=lts-16.27
+\end{minted}
+That may take a few minutes to complete, but this is all you need to do.
+
+\subsection{Option 2: Haskell Platform}
+
+You can download the Haskell Platform from the {\small \url{https://www.haskell.org/}} website or from a package manager of choice (beware of old versions!). The Haskell Platform contains the Haskell compiler, GHC, as well as a comprehensive set of libraries. The downside to taking this approach is that the libraries which are contained in a release of the Haskell Platform may not be the most recent versions or you may not need all of them to begin with. Note that libraries can be installed on-the-fly at any time anyway, so there is no need to have a large set of them pre-installed. Also, you will still want to install Stack to help you with building, testing, and benchmarking practicals and coursework.
+
+\subsection{Option 3: GHC only}
+
+If you are feeling really adventurous, you can install just GHC from the GHC website. You will then have to add any tools or libraries you want manually.
+
+\section{Haskell}
+
+Haskell is a modern, functional programming language and the primary language we use in this module. The Haskell language has been around for over twenty years and has evolved throughout that time. You can find more information about Haskell on the following website:
+\begin{center}
+	\url{https://www.haskell.org/}
+\end{center}
+Like with most other programming languages, Haskell source files are just plain text files. They are conventionally given the \texttt{\small .hs} file extension so that we can identify them more easily. In order to compile a Haskell source file, you of course need a Haskell compiler.
+
+\subsection{GHC}
+
+The Glasgow Haskell Compiler (GHC) is the most mature and feature-rich Haskell compiler out there and is the compiler we use in this module. Its implementation of Haskell is the \emph{de facto} language standard as far as many people are concerned. In addition to the core Haskell language, it also includes many extensions to the language which reflect state-of-the-art programming language features that stem from current research in the field. You can find more information about GHC at:
+\begin{center}
+	\url{https://www.haskell.org/ghc/}
+\end{center}
+GHC is already installed on the department's computers. You can invoke the version that \texttt{\small stack} installed simply by running \bashIn{stack ghc} in a terminal window. For example, suppose that we have a file named \texttt{\small Program.hs} with the following contents:
+\begin{minted}{haskell}
+main = putStrLn "Hello World!"
+\end{minted}
+In order to compile this program, you could run the following command in a terminal:
+\begin{minted}{text}
+$ stack ghc Program.hs
+\end{minted}
+This would produce (among other things) an executable named \texttt{\small Program} that can then be run to produce the expected output:
+\begin{minted}{bash}
+$ ./Program 
+Hello World!
+\end{minted}
+
+\subsection{GHCi}
+
+GHC typically compiles Haskell source files into executables or libraries. However, it can also be used \emph{interactively} to provide you with a text-based user interface which lets you evaluate expressions that you type in, experiment with functions you have defined, etc. In this mode, GHC is referred to as GHCi, or GHC interactive. GHCi can be invoked by running \texttt{\small stack ghci} in a terminal window. You can optionally specify any Haskell source files you wish to load as additional arguments.
+
+\subsection{Haskell Stack} 
+\label{sec:stack}
+
+Haskell programs, like programs written in other languages, typically consist of more than just one source file, may depend on libraries which provide functionality that we do not wish to implement from scratch, have test suites, benchmarks, and so on. Haskell Stack is a \emph{build tool} which automates many of tasks related to GHC, such as downloading and installing different versions of GHC, managing and building projects, managing dependencies, running unit tests, running benchmarks, etc. You can find more information about Stack at:
+\begin{center}
+	\url{https://www.haskellstack.org}
+\end{center}
+Stack is already installed on the departmental machines, but you need to run the following command in a terminal window to set it up on your user account if you have not yet done so:
+\begin{minted}{bash}
+$ /modules/cs141/haskell-setup.sh
+\end{minted}
+For Stack to work with a particular project, it needs a configuration file. All exercises for the labs and the coursework already come with a Stack configuration file, so you do not have to configure anything yourself. These files are named \texttt{\small stack.yaml} and you can find them in the root folders of each lab or coursework.
+
+Once you have obtained \emph{e.g.} the skeleton code for one of the labs, you can run the following command to compile the code in the folder that contains the skeleton code:
+\begin{minted}{bash}
+$ stack build
+\end{minted}
+This will invoke GHC to compile all of the source files and also link all dependencies specified in the project's \texttt{\small .cabal} file into the program. Any errors that occur during compilation will be reported to the standard output. Many of the labs and all of the coursework will also come with a test suite. You can run the test suite by invoking:
+\begin{minted}{text}
+$ stack test
+\end{minted}
+As the test suite is being executed, it will print the outcome of each test to the standard output. If there are any benchmarks, you run them by invoking:
+\begin{minted}{bash}
+$ stack bench
+\end{minted}
+Another useful command is the following, which invokes GHCi with the configuration from the \texttt{\small stack.yaml} file:
+\begin{minted}{bash}
+$ stack repl
+\end{minted}
+or equivalently:
+\begin{minted}{bash}
+$ stack ghci
+\end{minted}
+This launches the GHCi REPL for your project so that you can experiment with your code and ask for types etc. See the notes for the first exercises for details on the REPL.
+
+\subsection{Cabal}
+
+Cabal is Haskell's default package manager and build tool. We will not be using it in this module since Stack does everything Cabal does. However, you should be aware of files with the \texttt{\small .cabal} extension which contain the project configuration, such as which dependencies to load. Stack can also use a tool called \texttt{\small hpack} to generate these \texttt{\small .cabal} files from \texttt{\small package.yaml} files. Some labs will just come with a \texttt{\small .cabal} file which can you edit directly while others may have a \texttt{\small package.yaml} file that you need to edit instead. If you decide to use \emph{e.g.} additional libraries (\Cref{sec:hackage}), then you will need to list them in the relevant \texttt{\small .cabal} or \texttt{\small package.yaml} file. We cover this process in detail in one of the lectures.
+
+\subsection{Prelude} 
+
+The \texttt{\small Prelude} is Haskell's standard library. It is part of the \texttt{\small base} package. It contains many useful types and functions which you will make use of in virtually every program. The \texttt{\small Prelude} module is automatically imported into every Haskell module and the \texttt{\small base} package is automatically imported into every Haskell project, so you do not have to do anything to use it. You can find documentation for all the functions and types offered by the \texttt{\small Prelude} at:
+\begin{center}
+\url{http://hackage.haskell.org/package/base/docs/Prelude.html}
+\end{center}
+
+\subsection{Hackage} 
+\label{sec:hackage}
+
+The \texttt{\small Prelude} is of course not the only library that is available for Haskell. There are many different libraries which offer a lot of useful functionality. Hackage is Haskell's package database. If you are looking for a library which \emph{e.g.} provides a particular data structure, you can look on \texttt{\small Hackage} for it:
+\begin{center}
+\url{http://hackage.haskell.org/}
+\end{center}
+Note: if you are using the departmental machines, you will not be able to install any libraries off Hackage using \texttt{\small stack}, but you can use the ones which I have installed. If you would like to use a library on the departmental machines which is not installed, please let me know and I can install it for you!
+
+If you are working on your own machine and want to install additional packages, you can do so with Stack. For example, if you want to install the \texttt{\small containers} package, you can run \bashIn{stack install containers}. Make sure to do this in the folder which contains the project you want to use \texttt{\small containers} with as Stack will only install it for that project. See the Stack documentation for more details.
+
+\section{Version control}
+\label{sec:git}
+
+The skeleton code for all practicals and for all coursework is available as Git repositories which are hosted on GitHub at {\small \url{https://github.com/fpclass/}}. GitHub is one of several web services that allows you to host Git repositories online, along with \emph{e.g.} GitLab and BitBucket which are also popular. You are encouraged to use version control to obtain and maintain your code. If you have not had much exposure to version control using Git before, \emph{Pro Git} by Scott Chacon and Ben Straub is a very good reference book which is available for free at {\small \url{https://git-scm.com/book/en/v2}}. Below is a very quick reference of some of the most important commands you will use.
+
+To obtain the code for e.g. the first practical which is located in the \texttt{\small lab-getting-started} repository, you will want to run the following command on your machine once you have installed \texttt{\small git} (note that \texttt{\small git} is already installed by default on the lab machines, macOS, and many linux distributions):
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-getting-started
+\end{minted}
+This will create a local copy of the \texttt{\small lab-getting-started} repository on your machine that you can modify. If you are planning to work on your practical or coursework from multiple locations (e.g. a machine in the lab and your personal machine), you may find it beneficial to create a GitHub account and \emph{fork} the relevant repositories to your account instead. This creates a copy of them on your GitHub account which can then be read from and written to from anywhere. You can fork repositories on the GitHub website by visiting e.g. {\small \url{https://github.com/fpclass/lab-getting-started}} once logged in and clicking the ``fork'' button. If you take this approach, you will still need to obtain a local copy of the repository on all machines you plan to work on by running the command shown above, but replacing \texttt{\small fpclass} with your GitHub username. 
+
+\fbox{\parbox{\textwidth}{\textbf{WARNING}: do not fork the coursework repositories to your account as they will end up being public and you do not want everyone to be able to see your solutions! Use the GitHub Classroom links provided on the module website or at the start of each coursework specification instead which will allow you to create \emph{private} forks of the repositories.}}
+
+Once you have made some changes to the skeleton code, you will want to \emph{commit} your changes. This will tell \texttt{\small git} to remember that version in case you ever wish to go back to it. You can commit your changes by running:
+\begin{minted}{bash}
+$ git commit -m 'Some message to describe the changes' -a
+\end{minted}
+If you forked the repository to your own GitHub account, you may now wish to update that repository with your local changes by running:
+\begin{minted}{bash}
+$ git push
+\end{minted}
+This will update the repository on GitHub with all changes you have made. You may then wish to run the following command if you continue working on another machine, which will update the local repository there with changes from GitHub:
+\begin{minted}{bash}
+$ git pull
+\end{minted}
+None of this is necessary if you have cloned the code from {\small \url{https://github.com/fpclass/}} directly, but then you also cannot work on the code from multiple machines, unless you store the local repository on \emph{e.g.} Dropbox or a similar service (which is not recommended). 
+
+\section{Development tools}
+\label{sec:dev-tools}
+
+Most IDEs and text editors have plugins which can help you write Haskell code, by adding syntax highlighting or other useful features. More sophisticated plugins require additional tools which provide programming language-specific functionality to the editor. 
+
+\subsection{ghcid}
+
+A lightweight development tool for Haskell is \texttt{\small ghcid}, which is essentially just \texttt{\small ghci} or \texttt{\small stack repl}, but automatically reloads your files when they change. You can read more about \texttt{\small ghcid} at:
+\begin{center} \small
+	\url{https://github.com/ndmitchell/ghcid}
+\end{center}
+The \texttt{\small ghcid} executable is already installed on the lab machines and you can invoke it by running the following in \emph{e.g.} a folder with a \texttt{\small stack.yaml} file in it:
+\begin{minted}{bash}
+$ /modules/cs141/bin/ghcid
+\end{minted}
+The program will continue to run in the background and, every time you change any files in your project, compile them automatically. If any errors arise, the tool will output them.
+
+% \subsection{ghcide}
+
+% This program is a work-in-progress tool to provide text editors and IDEs with basic Haskell-related functionality via Microsoft's Language Server Protocol (LSP). It is already installed on the departmental machines in:
+% \begin{minted}{bash}
+% $ /modules/cs141/bin/ghcide
+% \end{minted}
+% See \Cref{sec:editors} for information about text editors that have plugins for it. You can read more about the tool in general at:
+% \begin{center}\small
+% 	\url{https://github.com/digital-asset/ghcide}
+% \end{center}
+
+\subsection{Haskell Language Server}
+
+Haskell Language Server (or HLS for short) is the Haskell community's current effort at creating a unified tool that text editors and IDEs can use to provide Haskell-related functionality. The \texttt{\small haskell-language-server} program implements Microsoft's Language Server Protocol (LSP) which allows HLS to be used with any editor that implements LSP. The tool does not currently work on the lab machines, but if you are working on your own machine, you can install it by following the instructions at:
+\begin{center}\small
+	\url{https://github.com/haskell/haskell-language-server}
+\end{center}
+
+\subsection{Editors}
+\label{sec:editors}
+
+This section contains recommendations for Haskell-related plugins for different text editors.
+
+\paragraph{Visual Studio Code} Visual Studio Code is the text editor I would recommend and that I am currently using. The \bashIn{/modules/cs141/haskell-setup.sh} script on the departmental machines already installs the following plugin for you:
+\begin{itemize}
+	\item \texttt{\small language-haskell}, which provides syntax highlighting for \texttt{\small .hs} source files.
+	%\item \texttt{\small haskell}, which allows VSCode to provide IDE-like functionality for Haskell by utilising \texttt{\small haskell-language-server}. 
+\end{itemize}
+On your own machine, I would additionally recommend the \texttt{\small haskell} plugin which allows VSCode to provide IDE-like functionality for Haskell by utilising \texttt{\small haskell-language-server}. 
+
+\paragraph{Atom} Atom is another text editor similar to VSCode that I can recommend for writing Haskell programs. There are a number of Haskell-related plugins which you may wish to install:
+\begin{itemize}
+	\item \texttt{\small language-haskell}, which provides syntax highlighting for \texttt{\small .hs} source files.
+	\item \texttt{\small atom-ide-ui}, which provides IDE-like UI elements in Atom.
+	\item \texttt{\small haskell}, which allows Atom to provide IDE-like functionality for Haskell by utilising \texttt{\small haskell-language-server}. 
+\end{itemize}
+If you are using Atom on your own machine, I would strongly encourage you to install the above packages through Atom's package manager \texttt{\small apm}.
+
+\paragraph{Sublime text} Sublime is a commercial text editor and that you need to pay for, but it offers better performance than Atom or VSCode. If you own a copy of Sublime and want to use \texttt{\small haskell-language-server} with it, you can follow the instructions at:
+\begin{center}\small 
+	\url{https://github.com/haskell/haskell-language-server\#using-haskell-language-server-with-sublime-text}
+\end{center}
+
+\paragraph{Vim} To use \texttt{\small haskell-language-server} with Vim, you can follow the instructions at:
+\begin{center}\small
+	\url{https://github.com/haskell/haskell-language-server\#using-haskell-language-server-with-vim-or-neovim}
+\end{center}
+There are also Vimscripts for Haskell at:
+\begin{center}\small
+\url{https://github.com/neovimhaskell/haskell-vim}
+\end{center}
+
+\paragraph{Emacs} To use \texttt{\small haskell-language-server} with Emacs, you can follow the instructions at:
+\begin{center}\small
+	\parbox{13cm}{\centering\url{https://github.com/haskell/haskell-language-server\#using-haskell-language-server-with-emacs}}
+\end{center}
+There is a Haskell mode for Emacs as well:
+\begin{center} \small
+\url{https://github.com/haskell/haskell-mode}
+\end{center}
+
+\section{Other useful resources}
+\label{sec:useful-resources}
+
+\subsection{The lecturer \& lab tutors} 
+\label{sec:getting-help}
+
+Obviously. We are happy to help! Feel free to get in touch on Slack at any time (for usually pretty quick responses), or send me an email at \href{mailto:m.gale@warwick.ac.uk}{m.gale@warwick.ac.uk} if you have any questions (for slightly slower responses). 
+
+\subsection{Hoogle} 
+
+If you ever need to find something in a library, Hoogle\footnote{\url{https://hoogle.haskell.org}} is an incredibly valuable resource. I use it all the time! You can use it for a range of different things:
+\begin{itemize}
+\item If you know the name of a function and want to find out more about it or what its type is, you can just search for the name. The results will take you to the documentation for the relevant module.
+\item If you want to find a function which does something in particular, \emph{e.g.} applies a function to all elements of a list, you can search for the type and Hoogle will try to find a matching function for you. It will automatically rearrange parameters and search for similar functions or those with more general types as well. 
+\end{itemize}
+
+\subsection{Reddit} 
+
+There is a Haskell subreddit\footnote{\url{https://www.reddit.com/r/haskell/}} where people often post Haskell-related news and discussions. If you use Reddit regularly (\emph{i.e.} too much) and want to broaden your Haskell horizons, it might be a good idea to subscribe.
+
+\subsection{The Haskell mailing list} 
+
+There are several Haskell mailing lists\footnote{\url{https://www.haskell.org/mailing-lists}}. The most interesting ones for you will be \texttt{\small Haskell-Cafe} and \texttt{\small Beginners}. The latter is for beginner questions. This might be a good place to get help from if you are thinking of using Haskell after the course has finished. Until then, you are encouraged to seek help from me or one of the tutors instead -- we are happy to help! 
+
+\subsection{Other communities} 
+
+There are plenty of other Haskell communities on the web\footnote{\url{https://www.haskell.org/community}} you can join and take part in. Remember, you cannot ask other people to solve all or parts of your coursework for you. We will find out -- we have the technology!
+
+

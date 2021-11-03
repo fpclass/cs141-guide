@@ -1,0 +1,100 @@
+\section{Recursive functions}
+
+\solution{\ref{task:elem-explicit}}{\emph{Solution}: We know that the goal of \haskellIn{elem} is to determine whether some value of some type \texttt{\small a} is contained in a list where the elements are of type \texttt{\small a}. We also know that we are supposed to use explicit recursion to solve the problem.} 
+	
+Whenever we use recursion, we need to think about what the simplest possible case(s) are that a function might want to solve. In the case of \haskellIn{elem}, we know that the thing we are looking for in the list, let's call it \texttt{\small x}, won't change -- we only want to search through the list. Therefore, the simplest case we need to consider is the one where we are looking for \texttt{\small x} in the empty list. Of course \texttt{\small x} will not be in the empty list, so that case always trivially evaluates to \haskellIn{False}. The corresponding definition in Haskell is now very straight-forward: 
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x [] = False
+\end{minted}
+Now that we have an implementation for the simplest case, we need to solve the recursive cases. As we have determined above, we know that the element we are looking for won't change, so we can start by writing the following for the next equation (this will not compile yet): 
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x [] = False
+elem x
+\end{minted}
+For the second argument, we know it can't be the empty list since we already have an equation which covers that case. Consequently, we are left with the non-empty list. We use pattern matching to break the non-empty list into its head, which we name \texttt{\small y}, and its tail, which we name \texttt{\small ys} (this still won't compile yet):
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x []     = False
+elem x (y:ys) =
+\end{minted}
+To come up with the right-hand side of the equation, we assume that we already have a working implementation of the \haskellIn{elem} function. That means, we can solve the problem for \texttt{\small ys}:
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x []     = False
+elem x (y:ys) = elem x ys
+\end{minted}
+Now we are nearly there! With the current definition, \haskellIn{elem} just goes through the whole list given as argument and eventually returns \haskellIn{False} when it reaches the empty list. So now we need to check whether some element from the list \texttt{\small y} is equal to \texttt{\small x}. If so, we can return \haskellIn{True} and otherwise, we should keep looking. One possible way in which we could write this is using guards:
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x []     = False
+elem x (y:ys)
+  | x == y    = True 
+  | otherwise = elem x ys
+\end{minted}
+This implementation now does what we want. Also recall that guards are just syntactic sugar for (nested) if expressions, so this definition of \haskellIn{elem} is equivalent to the following:
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x []     = False
+elem x (y:ys) = if x==y then True else elem x ys
+\end{minted}
+This version is not as nice as the one with guards, though. In general, using guards is nicer than using if expressions. However, there is an even more elegant solution:
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x []     = False
+elem x (y:ys) = x==y || elem x ys
+\end{minted}
+As in imperative languages, the \haskellIn{(||)} operator will only evaluate its second argument if the first one is \haskellIn{False}. So you don't need to worry about inefficiency in this solution, because the recursive call is only made if needed. 
+
+If you are particularly observant, you might now notice that the definition of \haskellIn{elem} looks a lot like something that could be replaced by \haskellIn{foldr} with appropriate arguments and indeed, you can write something like the following:
+\begin{minted}{haskell}
+elem :: Eq a => a -> [a] -> Bool
+elem x = foldr (\y r -> x==y || r) False
+\end{minted}
+%\solution{\ref{task:elem-composition}}{\emph{Solution}: For this task, we are meant to define the \texttt{elem} function entirely in terms of the following standard library functions: \texttt{filter} with an appropriate predicate, \texttt{null}, \texttt{not}, and the function composition operator. Let's ignore function composition for now and focus on using the three other functions. Recall (or look up) their types:
+
+%\texttt{not~~~~:: Bool -> Bool} \\
+%\texttt{null~~~:: [a] -> Bool} \\
+%\texttt{filter :: (a -> Bool) -> [a] -> [a]}
+	
+%We start by writing down a skeleton for \texttt{elem}, which will not yet compile:
+	
+%\texttt{elem :: Eq a => a -> [a] -> Bool}\\
+%\texttt{elem x xs = }
+
+%Thinking about what each of the given functions does, it wouldn't make sense to use \texttt{null} straight away, since testing whether \texttt{xs} is the empty list or not will not help us determine whether \texttt{x} is an element of it. 
+
+%\texttt{elem :: Eq a => a -> [a] -> Bool}\\
+%\texttt{elem x xs = not (null (filter (==x)))}
+
+%Finally, we can use function composition to make our definition more elegant. Function composition transforms nested function application \texttt{f (g x)} to 
+
+%\texttt{elem :: Eq a => a -> [a] -> Bool}\\
+%\texttt{elem x = not . null . filter (==x)}
+
+%} 
+
+\taskLine
+
+\section{Higher-order functions}
+
+\solution{\ref{task:higher-order-typings}}{For each of the following statements, discuss with someone (friend, tutor, rubber duck, etc.) whether it is true or false:}
+
+\begin{enumerate}
+	\item A function of type \texttt{\small a -> b -> c} returns a function. \\
+	\emph{Solution}: This is true. Function types associate to the right, so that this type really means \texttt{\small a -> (b -> c)}: a function from some value of type \texttt{\small a} to a function of type \texttt{\small b -> c}. Note that there are no functions whose type is exactly \texttt{\small a -> b -> c} however.
+	\item A function of type \texttt{\small (a -> b) -> Int} returns a function. \\
+	\emph{Solution}: This is false. The type shows that the function always returns a value of type \haskellIn{Int}.
+	\item A function of type \texttt{\small (Int, Bool) -> Char} is higher-order. \\
+	\emph{Solution}: This is false. A function is higher-order if it takes a function as argument or if it returns a function. Functions of the type shown above do neither.
+	\item A function of type \texttt{\small a -> a} can be a higher-order function.\\
+	\emph{Solution}: This is true. The type variable \texttt{\small a} can be instantiated with any other type, including function types. The identity function \haskellIn{id} is the only function of this type:
+	\begin{minted}{haskell}
+	id :: a -> a
+	id x = x
+	\end{minted}
+	Applying \haskellIn{id} to another function just returns that function. For example, \haskellIn{id map} evaluates to \haskellIn{map}.
+\end{enumerate}
+
+\taskLine

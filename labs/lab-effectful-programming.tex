@@ -1,0 +1,141 @@
+\section{Effectful Programming}
+\topics{Monads.}
+
+These exercises are about monads. As usual, you can obtain the skeleton code for the exercises by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-effectful-programming
+\end{minted}
+For your reference, the definition of the \haskellIn{Monad} type class is given below. A type \texttt{\small m} is a monad if it is an applicative functor and there is a function of type \texttt{\small m~a -> (a -> m~b) -> m~b} which satisfies the monad laws. This function is referred to as ``bind'' and denoted by the  \haskellIn{(>>=)} operator. In Haskell, we can overload the \haskellIn{(>>=)} operator for all types which are monads using a type class:
+\begin{minted}{haskell}
+class Applicative m => Monad m where 
+    return :: a -> m a 
+    return = pure 
+    
+    (>>=) :: m a -> (a -> m b) -> m b
+\end{minted}
+Also for your reference, the monad laws are shown below:
+\begin{displaymath}
+\begin{array}{lcrcl}
+\textbf{Left identity} &\qquad & \mathit{return}~x \bind f & = & f~x \\
+\textbf{Right identity} &\qquad & m \bind \mathit{return} & = & m \\
+\textbf{Associativity} & \qquad & (m \bind f) \bind g & = & m \bind (\lambda x \to f~x \bind g)
+\end{array}
+\end{displaymath}
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapters 12 and 13 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 12 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\makebox[0.5cm]{\faBook}~\emph{Further reading}: the use of monads in functional programming was popularised by \emph{Monads for functional programming} \citep{wadler1995monads}.
+
+\taskLine 
+
+\task[task:grandparent]{Suppose that you are given a family tree of the Duck family. The family tree is represented as a Haskell list of pairs which maps the names of members of the Duck family to their respective parent:}
+\begin{minted}{haskell}
+duckily :: [(String, String)]
+duckily =
+    [ ("Grandduck", "Grand duckster")
+    , ("Baby Duck", "Parent Duck")
+    , ("Duckling", "Older duckling")
+    , ("Parent Duck", "Grandduck")
+    ]
+\end{minted}
+Using the \haskellIn{lookup} function and the fact that \texttt{\small Maybe} is a monad, write a function 
+\begin{minted}{haskell}
+grandduck :: [(String, String)] -> String -> Maybe String
+\end{minted}
+which, given a family tree in the format shown above and the name of a member of the family, should retrieve its grandparent if there is one known:
+\begin{minted}{haskell}
+grandduck duckily "Baby Duck"   ==> Just "Grandduck"
+grandduck duckily "Duckling"    ==> Nothing
+grandduck duckily "Parent Duck" ==> Just "Grand duckster"
+\end{minted}
+
+\task[task:grandduck-applicative]{Could you define the \haskellIn{grandduck} function if \texttt{\small Maybe} was only an applicative functor? If not, why?}
+
+\taskLine 
+
+\task[task:mapM]{The \haskellIn{map} function can be generalised to a \haskellIn{mapM} function which allows the function given as argument to return a monadic computation and sequences those computations:}
+\begin{minted}{haskell}
+mapM :: Monad m => (a -> m b) -> [a] -> m [b]
+mapM f []     = return [] 
+mapM f (x:xs) = do 
+    y  <- f x 
+    ys <- mapM f xs
+    return (y:ys)
+\end{minted}
+For example:
+\begin{minted}{haskell}
+mapM (safediv 4) [1,2,4] ==> Just [4,2,1]
+mapM (safediv 4) [1,0,4] ==> Nothing
+\end{minted}
+This version of \haskellIn{mapM} is defined with the help of the \haskellIn{do}-notation, which is just syntactic sugar for \haskellIn{(>>=)} and anonymous functions. Show what the definition of \haskellIn{mapM} given above would look like without the \haskellIn{do}-notation, \emph{i.e.} what the compiler desugars it into.
+
+\task[task:mapA]{Can you define the same function as \haskellIn{mapM}, but only with an \haskellIn{Applicative} constraint instead of \haskellIn{Monad}?}
+
+\task[task:zipWithM]{The \haskellIn{zipWith} function we encountered previously can also be generalised to functions which return monadic computations:}
+\begin{minted}{haskell}
+zipWithM :: Monad m => (a -> b -> m c) -> [a] -> [b] -> m [c]
+\end{minted}
+Implement this function so that the following expressions result in the values shown:
+\begin{minted}{haskell}
+zipWithM safediv [] [1,2,3]    ==> Just []
+zipWithM safediv [4,5,6] []    ==> Just []
+zipWithM safediv [4,5] [1,2,0] ==> Just [4,2]
+zipWithM safediv [4,5,6] [1,0] ==> Nothing
+zipWithM (\x y -> [x,y]) [1,2] [3,4] 
+==> [[1,2],[1,4],[3,2],[3,4]]
+\end{minted}
+
+%\task[task:zipWithA]{Could you implement a \texttt{zipWithA} function which behaves like \texttt{zipWithM} and has the same type, except that the \texttt{Monad} constraint has been replaced by an \texttt{Applicative} constraint?}
+
+\taskLine
+
+The \texttt{\small Either} type is similar to the \texttt{\small Maybe} type in that it can be used to indicate success and failure. Unlike the \texttt{\small Maybe} type, whose \haskellIn{Nothing} constructor takes no arguments, the \haskellIn{Left} constructor of \texttt{\small Either a b} takes one argument of type \texttt{\small a} which can be used to provide more information about the reason of the failure.
+
+\task[task:either-functor]{The \texttt{\small Either} type is a functor. Complete the instance of \haskellIn{Functor} for it so that:}
+\begin{minted}{haskell}
+fmap (+5) (Left "Witter") ==> Left "Witter" 
+fmap (+5) (Left Nothing)  ==> Left Nothing
+fmap (+5) (Right 8)       ==> Right 13
+\end{minted}
+
+\task[task:either-applicative]{The \texttt{\small Either} type is an applicative functor. Complete the instance of \haskellIn{Functor} for it so that the following expressions evaluate to the values shown:}
+\begin{minted}{haskell}
+pure (+4) <*> Right 42      ==> Right 46 
+pure (+4) <*> Left "Koan"   ==> Left "Koan"
+(+) <$> Right 4 <*> Right 2 ==> Right 6
+(+) <$> Left 4 <*> Right 2  ==> Left 4
+(+) <$> Right 4 <*> Left 2  ==> Left 2
+\end{minted}
+
+\task[task:either-monad]{The \texttt{\small Either} type is a monad. Complete the instance of \haskellIn{Monad} for it so that the following expressions evaluate to the values shown:}
+\begin{minted}{haskell}
+Right 5 >>= \x -> if odd x then Left "Odd!" else Right (x*2) 
+==> Left "Odd!"
+Right 4 >>= \x -> if odd x then Left "Odd!" else Right (x*2) 
+==> Right 8
+Left "!" >>= \x -> if odd x then Left "Odd!" else Right (x*2)
+==> Left "!"
+\end{minted}
+
+\task[task:either-laws]{Prove that the monad laws hold for your instance of \haskellIn{Monad} for the \texttt{\small Either} type.}
+
+\taskLine 
+
+\task[task:parser-monad]{The \texttt{\small Parser} type from the previous lab is a monad. Write a \haskellIn{Monad} instance for it. Once completed, you can write parsers which can make choices depending on what has been parsed so far. As a simple example, you could write a parser which parses the same character twice:}
+\begin{minted}{haskell}
+twice :: Parser String
+twice = do
+    c <- ch (const True)
+    d <- ch (==c)
+    return [c,d]
+\end{minted}
+Using this parser would then give you the following results:
+\begin{minted}{haskell}
+parse twice "aaab" ==> Just ("aa","ab")
+parse twice "bbab" ==> Just ("bb","ab")
+parse twice "bcaa" ==> Nothing
+\end{minted}
+
+\task[task:json-parser]{(\emph{Mini Project}) If you are feeling particularly adventurous and want to test your skills at using the \texttt{\small Parser} type, try writing a parser for the JSON format\footnote{\url{http://www.json.org}} using it. Alternatively, you could try using an existing parser library from Hackage, such as \texttt{\small parsec}\footnote{\url{http://hackage.haskell.org/package/parsec}} or \texttt{\small megaparsec}\footnote{\url{http://hackage.haskell.org/package/megaparsec}} to write a JSON parser. If you ever need a real JSON parser for a project in Haskell, the \texttt{\small aeson}\footnote{\url{http://hackage.haskell.org/package/aeson}} library implements one which is very efficient (at the cost of having bad error messages).}
+
+\taskLine 

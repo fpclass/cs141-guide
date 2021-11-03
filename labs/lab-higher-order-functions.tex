@@ -1,0 +1,93 @@
+\section{Higher-order functions} \label{sec:lab-hof}
+\topics{Higher-order functions and recursion schemes.}
+
+These exercises is about higher-order functions in Haskell. You can obtain the skeleton code by cloning the repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-higher-order-functions
+\end{minted}
+In a nutshell, higher-order functions are functions which take other functions as arguments or return functions.
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 6 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 7 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+\taskLine
+
+\task[task:higher-order-typings]{For each of the following statements, discuss with someone (friend, tutor, rubber duck, etc.) whether it is true or false:
+\begin{enumerate}
+\item A function of type \mintinline{text}{a -> b -> c} returns a function.
+\item A function of type \mintinline{text}{(a -> b) -> Int} returns a function. 
+\item A function of type \mintinline{text}{(Int, Bool) -> Char} is higher-order.
+\item A function of type \mintinline{text}{a -> a} can be a higher-order function.
+\end{enumerate}
+}
+
+\taskLine
+
+You have already learnt how to write functions using \emph{explicit recursion}, as demonstrated in the definition of \haskellIn{and} below:
+\begin{minted}{haskell}
+and :: [Bool] -> Bool
+and []     = True 
+and (x:xs) = x && and xs
+\end{minted}
+\emph{I.e.} a function is explicitly recursive if it mentions itself by name in its definition: in this case, \haskellIn{and} is mentioned on the RHS of the second equation.
+
+You have now also learnt how to use higher-order functions to abstract over common patterns. For example, you could define \haskellIn{and} with the help of \haskellIn{foldr} as the following, in which case the recursion is not explicit:
+\begin{minted}{haskell}
+and :: [Bool] -> Bool 
+and = foldr (&&) True
+\end{minted} 
+
+\taskLine
+
+\task[task:elem-composition]{Define \haskellIn{elem} entirely in terms of the following standard library functions: \haskellIn{not}, \haskellIn{null}, \haskellIn{filter} with an appropriate predicate, and function composition.} 
+
+\task[task:elem-foldr]{Now define \haskellIn{elem} in terms of \haskellIn{foldr}. Do you find this definition clearer than the previous one?} 
+
+\taskLine
+
+\task{The \haskellIn{foldr1 :: (a -> a -> a) -> [a] -> a} function behaves like \haskellIn{foldr}, except that it assumes the list argument always has at least one element. It therefore only requires a binary operation and the list as arguments. Implement \haskellIn{maximum} using \haskellIn{foldr1}.}
+
+\taskLine 
+
+\task{Complete the definition of \haskellIn{any}, which should test whether at least one element of the list given as argument satisfies the predicate. For example, \haskellIn{any even [1,2,3]} should evaluate to \haskellIn{True}.}
+
+\task{Can you define \haskellIn{elem} using only \haskellIn{any} with an appropriate predicate?}
+
+\taskLine
+
+\task{Complete the definition of \haskellIn{all}, which should test whether all elements of the list given as argument satisfy the predicate. For example, \haskellIn{all odd [1,3,5]} should evaluate to \haskellIn{True}.}
+
+\taskLine
+
+\task{Implement the \haskellIn{flip} function which, given a function with two parameters as argument, produces a function with the parameters flipped. Note: there are no unit tests for this function, but your implementation will be correct if it is well typed according to the typing in the skeleton code.}
+
+\taskLine 
+
+\task{Complete the definition of 
+	
+\haskellIn{takeWhile :: (a -> Bool) -> [a] -> [a]} 
+
+which generalises the \haskellIn{take} function to a predicate: \haskellIn{takeWhile} should take elements from the list argument and return them while the predicate holds. For example, \haskellIn{takeWhile (< 3) [1,2,3,2,1]} should evaluate to \haskellIn{[1,2]}. 
+}
+
+\taskLine 
+
+\task{Complete the definition of \haskellIn{zipWith}, which generalises \haskellIn{zip}. While \haskellIn{zip} puts elements from two lists into pairs in a resulting list, \haskellIn{zipWith} requires a function of type \mintinline{text}{a -> b -> c} as argument which combines elements of type \texttt{\small a} from the first list and elements of type \texttt{\small b} from the second list into elements of type \texttt{\small c} for the resulting list. For example, \haskellIn{zipWith replicate [1,2,3] ['a', 'b', 'c']} should evaluate to \haskellIn{["a", "bb", "ccc"]}.}
+
+\taskLine 
+
+\task{Complete the definition of \haskellIn{groupBy}, which should group elements of a list according to some predicate. For example, \haskellIn{groupBy (==) [1,2,2,3,4,4,1]} should evaluate to \haskellIn{[[1], [2,2], [3], [4,4], [1]]}.}
+
+\taskLine
+
+\task{Complete the definition of
+	
+\haskellIn{permutations :: Eq a => [a] -> [[a]]}
+	
+which should find all possible permutations of the argument. For example, evaluating \haskellIn{permutations "abc"} should result in a list such as \linebreak \haskellIn{["abc", "acb", "bac", "bca", "cab", "cba"]}. The order of the elements in the resulting list does not matter.
+} 
+
+\task{Could you implement \haskellIn{permutations} without the \haskellIn{Eq} constraint on \texttt{\small a}?}
+
+\taskLine 
+
+

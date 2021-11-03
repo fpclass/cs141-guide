@@ -1,0 +1,77 @@
+\section{List comprehensions}
+\topics{List comprehensions.}
+
+This practical is about list comprehensions in Haskell. You can obtain the code for this lab by cloning the respective repository from GitHub:
+\begin{minted}{bash}
+$ git clone https://github.com/fpclass/lab-list-comprehensions
+\end{minted}
+
+\makebox[0.5cm]{\faBook}~\emph{Recommended reading}: Chapter 2 of \emph{Learn you a Haskell} \citep{lipovaca2011learn} or Chapter 5 of \emph{Programming in Haskell} \citep{hutton2016programming}.
+
+Haskell has some syntactic sugar for generating lists which is referred to as \emph{list comprehensions}. These expressions are very similar to set comprehensions in mathematics. You will learn about their syntax and define some lists using them.
+
+In the first lecture, you saw the \haskellIn{[1..4]} notation to generate the list of numbers from 1 to 4: \haskellIn{[1,2,3,4]}. In general, the \haskellIn{[n..m]} syntax can be used to denote ranges between any two values \haskellIn{n} and \haskellIn{m}. Note that for this to work, \haskellIn{n} and \haskellIn{m} must have the same type and that type must satisfy an \haskellIn{Enum} constraint. Specifically, \haskellIn{[n..m]} is syntactic sugar for \haskellIn{enumFromTo n m} (a member of the \haskellIn{Enum} type class, which we will learn about later in the module).
+
+\taskLine
+
+\task{Complete the definitions of \haskellIn{zeroToTen} and \haskellIn{fourToEight} in \texttt{\small Lab.hs} to implement the lists representing the numbers from 0 to 10 and from 4 to 8 respectively.}
+
+\taskLine
+
+\task{As mentioned above, the \haskellIn{[n..m]} syntax works for any type that can satisfy an \haskellIn{Enum} constraint. Complete the definition of \haskellIn{lowercase} in \texttt{\small Lab.hs} to implement the list of lower-case characters from \haskellIn{'a'} to \haskellIn{'z'} without explicitly listing all the characters.}
+
+\taskLine
+
+List comprehensions can also be used to generate lists from other lists, just like set comprehensions are used to generate sets from other sets. For example, the following expression is a list comprehension which generates the list of numbers that are double the numbers from 0 to 10:
+\begin{minted}{haskell}
+[2*n | n <- [0..10]]
+\end{minted}
+The \haskellIn{n <- [0..10]} part in this example is referred to as a \emph{generator}. Given some list on the right of \haskellIn{<-}, it loops through all the elements of that list and binds them to \haskellIn{n} one after the other. The part on the left of the \haskellIn{|} is what is used to generate an element of the resulting list, for all values obtained from the right of the \haskellIn{|}. So, for this example, the resulting list is \haskellIn{[0,2,4,6,8,10,12,14,16,18,20]}.
+
+\taskLine
+
+\task{Using a list comprehension, complete the definition of \haskellIn{powersOfTwo}, which calculates the powers of two for the exponents from 1 to 10. The exponentiation operator in Haskell is \haskellIn{^}.} 
+
+\taskLine
+
+\task{Using a list comprehension, complete the definition of \haskellIn{factorials}, which calculates the list of factorials for the numbers 1 to 10.}
+
+\taskLine
+
+List comprehensions may contain more than one generator. If there is more than one generator, all subsequent generators loop through their elements for every element in the preceding generator. You can think of these as nested loops:
+\begin{minted}{haskell}
+[x*y | x <- [1..3], y <- [1..4]]
+\end{minted}
+In this example, there are three elements in the list used by the first generator. Each element in that list is multiplied with every element in the list used by the second generator. Therefore, the result is a list of 12 elements where the first four elements are multiples of one, the next four are multiples of two, and the last four are multiples of three: \haskellIn{[1,2,3,4,2,4,6,8,3,6,9,12]}.
+
+\taskLine
+
+\task{Using a list comprehension with two generators, define \haskellIn{coords} to be a list of coordinates where the top left corner of the coordinate system is \haskellIn{(0,0)} and the bottom right is \haskellIn{(10,10)}.}
+
+\taskLine
+
+\task{Generators after the first in a list comprehension may also refer to variables that are bound by preceding generators. Use this to complete the definition of \linebreak \haskellIn{noMoreThanFive} which should be a list of all pairs \haskellIn{(x,y)} such that \haskellIn{x} is a number from 0 to 5 and \haskellIn{y} is also a number from 0 to 5, unless $x+y > 5$: \texttt{\small [(0,0), (0,1), (0,2), (0,3), (0,4), (0,5), (1,0), (1,1), (1,2), (1,3), (1,4), \linebreak (2,0), ...]}}.
+
+\task{Define \haskellIn{noMoreThanFive'} which should produce the same list as \haskellIn{noMoreThanFive}, but not use any inequality operators. Note that the type of \haskellIn{noMoreThanFive'} no longer has an \haskellIn{Ord} constraint on the type variable \haskellIn{a} so that you will receive a type error if you try to use any inequality operators.}
+
+\taskLine
+
+Finally, a list comprehension may contain predicates to determine which elements produced by generators should be used for elements in the resulting list. For example, the following list comprehension generates all numbers which are factors of some number \haskellIn{n}. The \haskellIn{mod} function from the standard library calculates the remainder of two numbers:
+\begin{minted}{haskell}
+factors :: Int -> [Int]
+factors n = [x | x <- [1..n], mod n x == 0]
+\end{minted} 
+
+\taskLine
+
+\task{Complete the definition of \haskellIn{evens} which should be the list of all numbers from 0 to 100 which are even.}
+
+\taskLine
+
+\task{Complete the definition of \haskellIn{multiples} which, given some natural number \haskellIn{n}, should produce the list of all multiples of 3 and 5 in the range from 0 to \haskellIn{n} (inclusive). For example, \haskellIn{multiples 10} should evaluate to \haskellIn{[0,3,5,6,9,10]}.}
+
+\taskLine
+
+\task{Finally, ensure that all your definitions are correct by running all of the unit tests with \texttt{\small stack test} in a terminal.}
+
+\taskLine

@@ -1,0 +1,675 @@
+\cleardoublepage
+\chapter{Haskell Prelude}
+\label{ch:prelude}
+
+\setminted[haskell]{fontsize=\scriptsize}
+\renewcommand{\haskellIn}[1]{\mintinline[fontsize=\scriptsize]{haskell}{#1}}
+
+\begin{multicols}{2}\scriptsize 
+\begin{minted}{haskell}
+class Eq a where
+  (==), (/=) :: a -> a -> Bool
+  x /= y = not (x == y)
+\end{minted}
+	
+\begin{minted}{haskell}
+class Eq a => Ord a where
+  (<), (<=), (>), (>=) :: a -> a -> Bool
+  min, max             :: a -> a -> Bool
+
+  min x y | x <= y    = x
+          | otherwise = y
+
+  max x y | x <= y    = y
+          | otherwise = x
+\end{minted}
+	
+\begin{minted}{haskell}
+class Enum a where
+  succ           :: a -> a 
+  pred           :: a -> a
+  toEnum         :: Int -> a
+  fromEnum       :: a -> Int 
+\end{minted}
+	
+\begin{minted}{haskell}
+class Bounded a where
+  minBound :: a 
+  maxBound :: a
+\end{minted}
+	
+\begin{minted}{haskell}
+class Num a where 
+  (+), (-), (*) :: a -> a -> a
+  negate        :: a -> a
+  abs           :: a -> a
+  signum        :: a -> a
+  fromInteger   :: Integer -> a
+\end{minted}
+	
+\begin{minted}{haskell}
+class Enum a => Integral a where 
+  quot      :: a -> a -> a
+  rem       :: a -> a -> a
+  div       :: a -> a -> a
+  mod       :: a -> a -> a
+  quotRem   :: a -> a -> (a, a)
+  divMod    :: a -> a -> (a, a)
+  toInteger :: a -> Integer
+\end{minted}
+	
+\begin{minted}{haskell}
+class Num a => Fractional a where
+  (/)          :: a -> a -> a
+  recip        :: a -> a
+  fromRational :: Rational -> a
+\end{minted}
+	
+\begin{minted}{haskell}
+data Int = ...
+  deriving ( Eq, Ord, Show, Read
+           , Num, Integral )
+\end{minted}
+	
+\begin{minted}{haskell}
+data Integer = ...
+  deriving ( Eq, Ord, Show, Read
+           , Num, Integral )
+\end{minted}
+	
+\begin{minted}{haskell}
+data Float = ...
+  deriving ( Eq, Ord, Show, Read
+           , Num, Fractional )
+\end{minted}
+	
+\begin{minted}{haskell}
+data Double = ...
+  deriving ( Eq, Ord, Show, Read
+           , Num, Fractional )
+\end{minted}
+	
+\begin{minted}{haskell}
+even :: Integral a => a -> Bool 
+even n = n `mod` 2 == 0
+\end{minted}
+	
+\begin{minted}{haskell}
+odd :: Integral a => a -> Bool 
+odd = not . even
+\end{minted}
+	
+\begin{minted}{haskell}
+class Show a where
+  show :: a -> String
+\end{minted}
+	
+\begin{minted}{haskell}
+class Read a where 
+  read :: String -> a
+\end{minted}
+	
+\begin{minted}{haskell}
+class Foldable t where
+  foldr   :: 
+    (a -> b -> b) -> b -> t a -> b
+  foldl   :: 
+    (b -> a -> b) -> b -> t a -> b
+  foldr1  :: (a -> a -> a) -> t a -> a
+  foldl1  :: (a -> a -> a) -> t a -> a
+
+  null :: t a -> Bool 
+  null = foldr (\_ _ -> False) True
+
+  length :: t a -> Int
+  length = foldr (\x r -> 1 + r) 0
+
+  elem :: Eq a -> a -> t a -> Bool 
+  elem x = 
+    foldr (\y r -> x==y || r) False
+
+  maximum :: Ord a => t a -> a 
+  maximum = foldl1 max
+
+  minimum :: Ord a => t a -> a 
+  minimum = foldl1 min
+
+  sum :: Num a => t a -> a 
+  sum = foldl (+) 0
+
+  product :: Num a => t a -> a
+  product = foldl (*) 1
+\end{minted}
+	
+\begin{minted}{haskell}
+(.) :: (b -> c) -> (a -> b) -> a -> c
+(.) f g x = f (g x)
+\end{minted}
+	
+\begin{minted}{haskell}
+id :: a -> a
+id x = x
+\end{minted}
+	
+\begin{minted}{haskell}
+const :: a -> b -> a
+const x _ = x
+\end{minted}
+	
+\begin{minted}{haskell}
+($!) :: (a -> b) -> a -> b
+f $! x = ...
+\end{minted}
+
+\vspace{2cm}
+\textbf{\large Semigroups and Monoids}\\
+\begin{minted}{haskell}
+class Semigroup a where 
+  (<>) :: a -> a -> a
+\end{minted}
+
+\begin{minted}{haskell}
+class Semigroup a => Monoid a where 
+  mempty :: a
+\end{minted}
+\begin{displaymath}
+\begin{array}{lrcl}
+\textbf{Left identity} & \mathit{mempty} \mappend x & = & x \\
+\textbf{Right identity} & x \mappend \mathit{mempty} & = & x \\
+\textbf{Associativity} & (x \mappend y) \mappend z & = & x \mappend (y \mappend z)
+\end{array}
+\end{displaymath}
+	
+\textbf{\large Functors}\\
+	
+\begin{minted}{haskell}
+class Functor f where 
+  fmap :: (a -> b) -> f a -> f b
+\end{minted}
+\begin{displaymath}
+\begin{array}{lrcl}
+\textbf{Identity} & \mathit{fmap}~\mathit{id} & = &  \mathit{id} \\
+\textbf{Fusion} & \mathit{fmap}~(f \circ g) & = & \mathit{fmap}~f \circ \mathit{fmap}~g
+\end{array}
+\end{displaymath}
+	
+\textbf{\large Applicatives}\\
+	
+\begin{minted}{haskell}
+class Functor f => Applicative f where 
+  pure  :: a -> f a
+  (<*>) :: f (a -> b) -> f a -> f b
+\end{minted}
+\begin{displaymath}
+\begin{array}{lr}
+\textbf{Identity} & \mathit{pure}~\mathit{id} <\!\!*\!\!> v = v \\ 
+\textbf{Homomorphism} & \mathit{pure}~f <\!\!*\!\!> \mathit{pure}~x \\& = \mathit{pure}~(f~x) \\
+\textbf{Interchange} & u <\!\!*\!\!> \mathit{pure}~y \\
+& = \mathit{pure}~(\$~y) <\!\!*\!\!> u \\
+\textbf{Composition} & \mathit{pure}~(\circ) <\!\!*\!\!> u <\!\!*\!\!> v <\!\!*\!\!> w  \\
+& = u <\!\!*\!\!> (v <\!\!*\!\!> w)
+\end{array}
+\end{displaymath}
+	
+\textbf{\large Monads}\\
+	
+\begin{minted}{haskell}
+class Applicative m => Monad m where 
+  return :: a -> m a
+  return = pure
+
+  (>>=) :: m a -> (a -> m b) -> m b
+\end{minted}
+\begin{displaymath}
+\begin{array}{lrcl}
+\textbf{Left identity} & \mathit{return}~a \bind f & = & f~a \\
+\textbf{Right identity} & m \bind \mathit{return} & = & m \\
+\textbf{Associativity} & (m \bind f) \bind g & = & \\ \multicolumn{2}{r}{ m \bind (\textbackslash x \to f~x \bind g)}
+\end{array}
+\end{displaymath}
+	
+\pagebreak
+\textbf{\large Booleans}\\
+	
+\begin{minted}{haskell}
+data Bool = True | False
+  deriving ( Bounded, Enum, Eq, Ord
+           , Read, Show )
+\end{minted}
+	
+\begin{minted}{haskell}
+not :: Bool -> Bool
+not True  = False
+not False = True
+\end{minted}
+	
+\begin{minted}{haskell}
+(&&) :: Bool -> Bool -> Bool
+True && True = True 
+_    && _    = False
+\end{minted}
+	
+\begin{minted}{haskell}
+(||) :: Bool -> Bool -> Bool
+False || False = False 
+_     || _     = True
+\end{minted}
+	
+\begin{minted}{haskell}
+and :: Foldable t => t Bool -> Bool 
+and = foldr (&&) True
+\end{minted}
+	
+\begin{minted}{haskell}
+or :: Foldable t => t Bool -> Bool 
+or = foldr (||) False
+\end{minted}
+	
+\begin{minted}{haskell}
+all :: Foldable t => 
+    (a -> Bool) -> t a -> Bool
+all p = and . foldr (\x xs -> p x : xs) []
+\end{minted}
+	
+\begin{minted}{haskell}
+any :: Foldable t => 
+    (a -> Bool) -> t a -> Bool
+any p = or . foldr (\x xs -> p x : xs) []
+\end{minted}
+	
+\begin{minted}{haskell}
+otherwise :: Bool
+otherwise = True
+\end{minted}
+	
+\textbf{\large Characters}\\
+	
+\begin{minted}{haskell}
+data Char = ...
+\end{minted}
+	
+\begin{minted}{haskell}
+type String = [Char]
+\end{minted}
+	
+\begin{minted}{haskell}
+isLower :: Char -> Bool 
+isLower c = c >= 'a' && c <= 'z'
+\end{minted}
+	
+\begin{minted}{haskell}
+isUpper :: Char -> Bool 
+isUpper c = c >= 'A' && c <= 'Z'
+\end{minted}
+	
+\begin{minted}{haskell}
+isAlpha :: Char -> Bool 
+isAlpha c = isLower c || isUpper c
+\end{minted}
+	
+\begin{minted}{haskell}
+isDigit :: Char -> Bool 
+isDigit c = c >= '0' && c <= '9'
+\end{minted}
+	
+\begin{minted}{haskell}
+isAlphaNum :: Char -> Bool 
+isAlphaNum c = isAlpha c || isDigit c
+\end{minted}
+	
+\begin{minted}{haskell}
+isSpace :: Char -> Bool 
+isSpace c = c `elem` " \t\n"
+\end{minted}
+	
+\begin{minted}{haskell}
+ord :: Char -> Int 
+ord c = ...
+\end{minted}
+	
+\begin{minted}{haskell}
+chr :: Int -> Char 
+chr n = ...
+\end{minted}
+	
+\begin{minted}{haskell}
+digitToInt :: Char -> Int 
+digitToInt c | isDigit c = ord c - ord '0'
+\end{minted}
+	
+\begin{minted}{haskell}
+intToDigit :: Int -> Char 
+intToDigit n 
+  | n >= 0 && n <= 9 = chr (ord '0' + n)
+\end{minted}
+	
+\begin{minted}{haskell}
+toLower :: Char -> Char 
+toLower c 
+  | isUpper c =
+      chr (ord c - ord 'A' + ord 'a')
+  | otherwise = c
+\end{minted}
+
+\begin{minted}{haskell}
+toUpper :: Char -> Char 
+toUpper c 
+  | isLower c =
+      chr (ord c - ord 'a' + ord 'A')
+  | otherwise = c
+\end{minted}
+	
+\textbf{\large Lists}\\
+	
+\begin{minted}{haskell}
+data [a] = [] | (:) a [a]
+  deriving (Eq, Ord, Show, Read)
+\end{minted}
+	
+\begin{minted}{haskell}
+instance Functor [] where 
+  fmap = map
+\end{minted}
+	
+\begin{minted}{haskell}
+instance Applicative [] where
+  pure x = [x]
+
+  fs <*> xs = [f x | f <- fs, x <- xs]
+\end{minted}
+	
+\begin{minted}{haskell}
+instance Monad [] where 
+  xs >>= f = [y | x <- xs, y <- f x]
+\end{minted}
+	
+\begin{minted}{haskell}
+instance Foldable [] where 
+  foldr _ v []     = v 
+  foldr f v (x:xs) = f x (foldr f v xs)
+
+  foldr1 _ [x]    = x 
+  foldr1 f (x:xs) = f x (foldr1 f xs)
+
+  foldl _ v []     = v 
+  foldl f v (x:xs) = foldl f (f v x) xs
+
+  foldl1 f (x:xs) = foldl f x xs
+\end{minted}
+	
+\begin{minted}{haskell}
+head :: [a] -> a 
+head (x:xs) = x
+
+tail :: [a] -> [a]
+tail (x:xs) = xs
+\end{minted}
+	
+\begin{minted}{haskell}
+last :: [a] -> a
+last [x]    = x
+last (x:xs) = last xs
+\end{minted}
+	
+\begin{minted}{haskell}
+init :: [a] -> [a]
+init [_]    = []
+init (x:xs) = x : init xs
+\end{minted}
+	
+\begin{minted}{haskell}
+map :: (a -> b) -> [a] -> [b]
+map f []     = []
+map f (x:xs) = f x : map f xs
+\end{minted}
+	
+\begin{minted}{haskell}
+filter :: (a -> Bool) -> [a] -> [a]
+filter p [] = []
+filter p (x:xs)
+  | p x       = x : filter p xs
+  | otherwise = filter p xs
+\end{minted}
+	
+\begin{minted}{haskell}
+lookup :: Eq k => k -> [(k,v)] -> Maybe v
+lookup x [] = Nothing
+lookup x ((y,v):ys)
+  | x == y    = Just v
+  | otherwise = lookup x ys
+\end{minted}
+	
+\begin{minted}{haskell}
+(!!) :: [a] -> Int -> a
+(x:xs) !! 0 = x
+(x:xs) !! n = xs !! (n-1)
+\end{minted}
+	
+\begin{minted}{haskell}
+take :: Int -> [a] -> [a]
+take 0 _      = []
+take n []     = []
+take n (x:xs) = x : take (n-1) xs
+\end{minted}
+
+\begin{minted}{haskell}
+drop :: Int -> [a] -> [a]
+drop 0 xs     = xs 
+drop n []     = []
+drop n (x:xs) = drop (n-1) xs
+\end{minted}
+
+\begin{minted}{haskell}
+takeWhile :: (a -> Bool) -> [a] -> [a]
+takeWhile _ [] = []
+takeWhile p (x:xs) 
+  | p x       = x : takeWhile p xs
+  | otherwise = []
+\end{minted}
+
+\begin{minted}{haskell}
+dropWhile :: (a -> Bool) -> [a] -> [a]
+dropWhile _ [] = []
+dropWhile p (x:xs) 
+  | p x       = dropWhile p xs
+  | otherwise = x : xs
+\end{minted}
+
+\begin{minted}{haskell}  
+splitAt :: Int -> [a] -> ([a], [a])
+splitAt n xs = (take n xs, drop n xs)
+\end{minted}
+
+\begin{minted}{haskell}
+span :: (a -> Bool) -> [a] -> ([a], [a])
+span p xs = 
+  (takeWhile p xs, dropWhile p xs)
+\end{minted}
+
+\begin{minted}{haskell}  
+repeat :: a -> [a]
+repeat x = xs where xs = x : xs
+\end{minted}
+
+\begin{minted}{haskell}
+replicate :: Int -> a -> [a]
+replicate n = take n . repeat
+\end{minted}
+
+\begin{minted}{haskell}
+iterate :: (a -> a) -> a -> [a]
+iterate f x = x : iterate f (f x)
+\end{minted}
+
+\begin{minted}{haskell}
+zip :: [a] -> [b] -> [(a,b)]
+zip []     _      = []
+zip _      []     = []
+zip (x:xs) (y:ys) = (x,y) : zip xs ys
+\end{minted}
+
+\begin{minted}{haskell}
+(++) :: [a] -> [a] -> [a]
+[]     ++ ys = ys
+(x:xs) ++ ys = x : (xs ++ ys)
+\end{minted}
+
+\begin{minted}{haskell}
+concat :: [[a]] -> [a]
+concat = foldr (++) []
+\end{minted}
+
+\begin{minted}{haskell}
+reverse :: [a] -> [a]
+reverse = foldl (\xs x -> x : xs) []
+\end{minted}
+	
+\begin{minted}{haskell}
+subsequences :: [a] -> [[a]]
+subsequences []     = [[]]
+subsequences (x:xs) = ys ++ map (x:) ys
+  where ys = subsequences xs
+\end{minted}
+
+\begin{minted}{haskell}
+nub :: Eq a => [a] -> [a]
+nub []     = []
+nub (x:xs) = x : nub (filter (/= x) xs)
+\end{minted}
+
+\begin{minted}{haskell}
+delete :: Eq a => a -> [a] -> [a]
+delete _ []     = []
+delete x (y:ys) 
+  | x == y    = ys
+  | otherwise = y : delete x ys
+\end{minted}
+	
+\textbf{\large Maybe}\\
+
+\begin{minted}{haskell}
+data Maybe a = Nothing | Just a
+  deriving (Eq, Ord, Read, Show)
+\end{minted}
+
+\begin{minted}{haskell}
+instance Functor Maybe where
+  fmap f Nothing  = Nothing
+  fmap f (Just x) = Just (f x)
+\end{minted}
+
+\begin{minted}{haskell}
+instance Applicative Maybe where
+  pure x = Just x
+
+  Nothing  <*> _ = Nothing
+  (Just f) <*> y = fmap f y
+\end{minted}
+
+\begin{minted}{haskell}
+instance Monad Maybe where
+  Nothing  >>= f = Nothing
+  (Just x) >>= f = f x
+\end{minted}
+	
+\textbf{\large Either}\\
+	
+\begin{minted}{haskell}
+data Either a b = Left a | Right b
+\end{minted}
+
+\begin{minted}{haskell}
+instance Functor (Either e) where 
+  fmap f (Left x)  = Left x
+  fmap f (Right y) = Right (f y)
+\end{minted}
+
+\begin{minted}{haskell}
+instance Applicative (Either e) where 
+  pure = Right
+  
+  Left e  <*> _ = Left e 
+  Right f <*> x = fmap f x
+\end{minted}
+
+\begin{minted}{haskell}
+instance Monad (Either e) where 
+  Left e >>= _  = Left e
+  Right x >>= f = f x
+\end{minted}
+	
+\textbf{\large Tuples}
+	
+All types of tuples are instances of \haskellIn{Eq}, \haskellIn{Ord}, \haskellIn{Show}, \haskellIn{Read} provided that their components are also instances of those type classes.
+	
+\begin{minted}{haskell}
+fst :: (a, b) -> a
+fst (x,y) = x
+\end{minted}
+
+\begin{minted}{haskell}
+snd :: (a, b) -> b
+snd (x,y) = y
+\end{minted}
+
+\begin{minted}{haskell}
+curry :: ((a, b) -> c) -> a -> b -> c 
+curry f x y = f (x, y)
+\end{minted}
+
+\begin{minted}{haskell}
+uncurry :: (a -> b -> c) -> (a, b) -> c
+uncurry f (x,y) = f x y
+\end{minted}
+	
+\textbf{\large IO}\\
+	
+\begin{minted}{haskell}
+data IO a = ...
+\end{minted}
+
+\begin{minted}{haskell}
+instance Functor IO where ...
+instance Applicative IO where ...
+instance Monad IO where ...
+\end{minted}
+
+\begin{minted}{haskell}
+getChar :: IO Char
+getChar = ...
+\end{minted}
+
+\begin{minted}{haskell}
+getLine :: IO String
+getLine = ...
+\end{minted}
+
+\begin{minted}{haskell}
+putChar :: Char -> IO ()
+putChar c = ...
+\end{minted}
+
+\begin{minted}{haskell}
+putStr :: String -> IO ()
+putStr []     = return ()
+putStr (x:xs) = putChar x >> putStr xs
+\end{minted}
+
+\begin{minted}{haskell}
+putStrLn :: String -> IO ()
+putStrLn xs = putStr xs >> putChar '\n'
+\end{minted}
+
+\begin{minted}{haskell}
+print :: Show a => a -> IO ()
+print = putStrLn . show
+\end{minted}
+	
+\textbf{\large Type-level programming}
+
+The kind of types is denoted as \haskellIn{*} or \haskellIn{Type}. 
+	
+\begin{minted}{haskell}
+data Nat = Zero | Succ Nat
+\end{minted}
+\end{multicols}

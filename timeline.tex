@@ -1,0 +1,96 @@
+\section{Timeline}
+\label{sec:timeline}
+
+This module is comprised of approximately 30 lectures, 10 labs, 2 pieces of coursework, and an exam. This section contains a chronological schedule of all of these components. Note that the schedule may be subject to changes due to \emph{e.g.} staff illness or other unforeseen circumstances. Each lecture aims to answer a specific question, which is shown in the timeline. You can test your understanding by asking yourself that question after each lecture and checking that you can answer it. 
+
+The definite timetable is available on Tabula\footnote{\url{https://tabula.warwick.ac.uk/profiles/department/cs/timetables?modules=cs141}}, the module website, or on your personalised timetable on Tabula as well. 
+
+\newcommand{\foo}{\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
+
+\newcommand{\LectureEntry}[4]{#1 & \begin{tabular}{p{11cm}}
+		\textbf{#2} \\[-0.15cm]
+		\emph{#3} \\
+		#4
+\end{tabular}}
+\newcommand{\LabEntry}[3]{#1 & \begin{tabular}{p{11cm}}
+		\textbf{#2} \\
+		#3
+\end{tabular}}
+
+\begingroup
+%\begin{table}
+\newcommand{\oldarraystrech}{\arraystretch}
+	\renewcommand\arraystretch{1.4}\vskip-1.5ex
+	\begin{longtable}{@{\,}r <{\hskip 2pt} !{\foo} >{\raggedright\arraybackslash}p{12cm}}
+		\addlinespace[1.5ex]
+		\LectureEntry{11 January}{Lecture 1: Introduction}{What is functional programming and why should we learn it?}{Overview of programming paradigms \& models of computation, examples of applications of functional programming, module overview, and recommended texts.} \\
+		\LectureEntry{12 January}{Lecture 2: Definitions \& functions}{How do we write simple programs in Haskell?}{Definitions, basic arithmetic expressions, string values, boolean values, functions, using built-in functions, and basic pattern matching.} \\
+		\LectureEntry{13 January}{Lecture 3: Basic types}{How does the compiler prevent us from writing bad software?}{Basic types, function types, parametric polymorphism, constraints, and pairs.} \\
+		\LabEntry{11-15 January}{Week 1 exercises}{Relevant exercises for this week are \emph{Getting started}, \emph{Functions}, and \emph{Basic types}.} \\
+		
+		\LectureEntry{18 January}{Lecture 4: Lists}{How do we use lists in Haskell?}{Constructing lists, pattern-matching on lists, and list comprehensions.} \\
+		\LectureEntry{19 January}{Lecture 5: Type classes}{How can we restrict polymorphism and overload functions?}{Ad-hoc polymorphism via type classes, built-in type classes, and type class constraints.} \\
+		\LectureEntry{20 January}{Lecture 6: Recursive functions}{How do we express loops without mutable state?}{Writing recursive functions for basic types (numbers, lists/strings), defining built-in functions ourselves.} \\
+		\LabEntry{18-22 January}{Week 2 exercises}{Relevant exercises for this week are \emph{Using the standard library}, \emph{Lists}, \emph{List comprehensions}, \emph{Type classes}, and \emph{Recursive functions}.} \\
+		
+		\LectureEntry{25 January}{Lecture 7: Data types \& type aliases}{How can we define our own types in Haskell?}{Type aliases, data types, data constructors, pattern matching on custom data constructors, recursion on values of custom types.} \\
+		\LectureEntry{26 January}{Lecture 8: Coursework I briefing}{What is the first coursework about?}{Demonstration of what the completed coursework will do, explanation of the rules, introduction to the skeleton code.} \\
+		\LectureEntry{27 January}{Lecture 9: Higher-order functions}{Can we write functions which abstract over common behaviours?}{Higher-order functions such as \haskellIn{map}, \haskellIn{filter}, etc., recursion primitives such as \haskellIn{foldr} and \haskellIn{foldl}.} \\	
+		\LabEntry{25-29 January}{Week 3 exercises}{Relevant exercises for this week are \emph{Data types}, \emph{Higher-order functions}, and \emph{Using other libraries}.} \\
+		
+		\LectureEntry{1 February}{Lecture 10: Higher-order functions (cont.)}{Can we write functions which abstract over common behaviours?}{Higher-order functions such as \haskellIn{map}, \haskellIn{filter}, etc., recursion primitives such as \haskellIn{foldr} and \haskellIn{foldl}.} \\
+		\LectureEntry{2 February}{Lecture 11: Lazy evaluation}{What order are programs evaluated in?}{Strict and lazy evaluation, calling conventions, benefits and disadvantages, and examples of lazy evaluation.} \\
+		\LectureEntry{3 February}{Lecture 12: Testing}{What tools are there for testing and how do we use them?}{Unit testing, property-based testing, and code coverage in Haskell.} \\
+		\LabEntry{1-5 February}{Week 4 exercises}{Relevant exercises for this week are \emph{Higher-order functions} and \emph{Lazy evaluation}.} \\
+
+		\LectureEntry{8 February}{Lecture 13: Reasoning about programs}{Can we use formal reasoning techniques to prove properties about our programs?}{Equational reasoning, proofs by induction.} \\
+		\LectureEntry{9 February}{Lecture 14: Reasoning about programs (cont.)}{Can we use formal reasoning techniques to prove properties about our programs?}{Equational reasoning, proofs by induction.} \\
+		\LectureEntry{10 February}{Lecture 15: Constructive induction}{Can we use formal reasoning techniques to calculate more efficient programs?}{Using induction to calculate faster functions.} \\
+		\LabEntry{8-12 February}{Week 5 exercises}{Recommended exercises for this week are \emph{Proofs}.} \\		
+		
+		\hline
+		16 February & \begin{tabular}{p{13cm}}
+			\textbf{Deadline: Coursework I} 
+		\end{tabular}\\
+		\hline
+
+		\LectureEntry{15 February}{Lecture 16: Foldables \& Functors}{Are there any useful design patterns in functional programming?}{\haskellIn{Foldable} and \haskellIn{Functor} type classes, their motivation, and examples.} \\
+		\LectureEntry{16 February}{Lecture 17: Coursework II briefing}{What is the second coursework about?}{Demonstration of what the completed coursework will do, semantics of the programming language, introduction to the skeleton code.} \\
+		\LectureEntry{17 February}{Lecture 18: Introduction to Applicative Functors}{Are there any other useful design patterns in functional programming?}{Applicative functors.} \\
+		\LabEntry{15-19 February}{Week 6 exercises}{Relevant exercises for this week are \emph{Foldables} and \emph{Functors}.} \\
+
+		\LectureEntry{22 February}{Lecture 19: Applicative functors}{What can we do with applicative functors?}{Applicative functors, applications of applicative functors.} \\
+		\LectureEntry{23 February}{Lecture 20: Applicative functors (cont.)}{What can we do with applicative functors?}{Applicative functors, applications of applicative functors.} \\
+		\LectureEntry{24 February}{Lecture 21: Introduction to sequential composition}{How do structure programs in which one part of a program relies on the result of another part?}{Some functions for the sequential composition of \texttt{\small Maybe} values.} \\
+		\LabEntry{22-26 February}{Week 7 exercises}{Relevant exercises for this week are \emph{Applicative functors}.} \\
+
+		\LectureEntry{1 March}{Lecture 22: Sequential composition}{Are there other examples of sequential composition?}{Some functions for the sequential composition of \texttt{\small State} and \texttt{\small Writer} values and some laws for sequential composition.} \\
+		\LectureEntry{2 March}{Lecture 23: Sequential composition (cont.)}{Are there other examples of sequential composition?}{Some functions for the sequential composition of \texttt{\small State} and \texttt{\small Writer} values and some laws for sequential composition.} \\
+		\LectureEntry{3 March}{Lecture 24: Input and output}{Can we write impure programs in a pure programming language?}{The \texttt{\small IO} monad.} \\
+		\LabEntry{1-5 March}{Week 8 exercises}{Relevant exercises for this week are \emph{Effectful programming}.} \\
+
+		\LectureEntry{8 March}{Lecture 25: Writing a real application in Haskell}{What do real Haskell programs look like?}{Everything we have learnt so far in action.} \\
+		\LectureEntry{9 March}{Lecture 26: Writing a real application in Haskell (cont.)}{What do real Haskell programs look like?}{Everything we have learnt so far in action.} \\
+		\LectureEntry{10 March}{Lecture 27: Type promotion \& GADTs}{How can we encode more information in types?}{Phantom types, GADTs, singleton types, pattern matching with GADTs.} \\
+		\LabEntry{8-12 March}{Week 9 exercises}{Relevant exercises for this week are \emph{Input \& output} and \emph{Kinds}.} \\
+		
+		\LectureEntry{15 March}{Lecture 28: Type families}{How can we perform computation at the type-level?}{Closed and open type families.} \\
+		\LectureEntry{16 March}{Lecture 29: Applied type-level programming}{What are some examples of how type-level programming is used?}{Type-level programming in action.} \\
+		\LectureEntry{17 March}{Lecture 30: Conclusions}{What have we learnt about functional programming?}{Summary of the module, information about the exam, and other general information.} \\
+		\LabEntry{15-19 March}{Week 10 exercises}{Relevant exercises for this week are \emph{Type-level programming}.} \\
+		\hline
+		23 March & \begin{tabular}{p{13cm}}
+			\textbf{Deadline: Coursework II} 
+		\end{tabular}\\
+		\hline
+		Term 3 & \begin{tabular}{p{13cm}}
+			\textbf{Revision lectures}  \\
+			Student-selected topics from the previous lectures.
+		\end{tabular}\\
+		Term 3 & \begin{tabular}{p{13cm}}
+			\textbf{Exam}  \\
+			2 hours. Answer any four out of six questions.
+		\end{tabular}
+	\end{longtable}
+%\end{table}
+\endgroup
